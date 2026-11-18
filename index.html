@@ -2,14 +2,14 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Kick the Dummy 2D - Ultimate Edition</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-touch-callout: none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
   html, body { width: 100%; height: 100%; background: #050505; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; position: fixed; }
   #app-root { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; }
-  canvas { display: block; width: 100%; height: 100%; background: #050505; }
-  #top-bar { position: absolute; top: 6px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; gap: 6px; z-index: 30; pointer-events: none; }
+  canvas { display: block; width: 100%; height: 100%; background: #050505; touch-action: none; }
+  #top-bar { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; gap: 6px; z-index: 30; pointer-events: none; }
   .hud-left, .hud-right { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
   .money-box { background: linear-gradient(135deg, #064e3b, #059669); border: 1.5px solid #34d399; padding: 5px 12px; border-radius: 10px; font-size: 16px; font-weight: 900; color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.7); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
   .mult-badge { background: linear-gradient(135deg, #4c1d95, #7c3aed); border: 1.5px solid #c4b5fd; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; }
@@ -21,41 +21,44 @@
   .ui-btn:active { transform: scale(0.92); }
   .btn-shop { background: linear-gradient(135deg, #9a3412, #ea580c); border-color: #fdba74; color: #fff; }
   .btn-upgrade-hud { background: linear-gradient(135deg, #1e40af, #2563eb); border-color: #93c5fd; color: #fff; }
-  #combo-box { position: absolute; top: 56px; left: 12px; z-index: 25; pointer-events: none; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.9); transition: transform 0.08s; display: none; }
+  #combo-box { position: absolute; top: 58px; left: 12px; z-index: 25; pointer-events: none; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.9); display: none; }
   .combo-num { font-size: 24px; color: #facc15; }
   .combo-sub { font-size: 10px; color: #fb923c; }
-  #event-banner { position: absolute; top: 52px; right: 12px; z-index: 25; pointer-events: none; background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; font-weight: 900; font-size: 12px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 0 14px rgba(245, 158, 11,withId=0.8); display: none; }
-  #bottom-bar-wrap { position: absolute; bottom: 6px; left: 8px; right: 8px; display: flex; align-items: center; gap: 6px; z-index: 30; pointer-events: none; }
-  #bottom-bar { flex: 1; display: flex; gap: 5px; overflow-x: auto; padding: 3px 2px; pointer-events: auto; scrollbar-width: none; }
+  #event-banner { position: absolute; top: 55px; right: 12px; z-index: 25; pointer-events: none; background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; font-weight: 900; font-size: 12px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); display: none; }
+  
+  /* Dolny pasek z odblokowanym dotykiem i płynnym przewijaniem w poziomie */
+  #bottom-bar-wrap { position: absolute; bottom: 8px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; z-index: 35; pointer-events: none; }
+  #bottom-bar { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 4px; pointer-events: auto; touch-action: pan-x; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   #bottom-bar::-webkit-scrollbar { display: none; }
-  .weapon-slot { flex: 0 0 auto; background: rgba(20, 18, 16, 0.95); border: 1.5px solid #44403c; border-radius: 9px; padding: 5px 9px; color: #e7e5e4; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; cursor: pointer; }
+  .weapon-slot { flex: 0 0 auto; background: rgba(20, 18, 16, 0.95); border: 1.5px solid #44403c; border-radius: 9px; padding: 6px 11px; color: #e7e5e4; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
   .weapon-slot.active { background: linear-gradient(135deg, #991b1b, #dc2626); border-color: #fca5a5; box-shadow: 0 0 10px rgba(220, 38, 38, 0.7); }
   .weapon-slot .lv-tag { background: rgba(0,0,0,0.5); padding: 2px 4px; border-radius: 5px; font-size: 9px; color: #fde047; }
   #quick-upgrade-btn { pointer-events: auto; }
-  .modal-overlay { position: absolute; inset: 0; background: rgba(5, 5, 5, 0.93); backdrop-filter: blur(6px); z-index: 60; display: none; flex-direction: column; padding: 10px 14px; }
+
+  .modal-overlay { position: absolute; inset: 0; background: rgba(5, 5, 5, 0.94); backdrop-filter: blur(6px); z-index: 60; display: none; flex-direction: column; padding: 12px 16px; }
   .modal-overlay.open { display: flex; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1.5px solid #292524; }
-  .modal-title { font-size: 17px; font-weight: 900; color: #fde047; }
-  .shop-tabs { display: flex; gap: 5px; margin: 6px 0; overflow-x: auto; padding-bottom: 2px; }
-  .tab-btn { flex: 1; white-space: nowrap; background: #1c1917; border: 1px solid #44403c; color: #d6d3d1; padding: 6px 9px; border-radius: 7px; font-weight: 800; font-size: 11px; cursor: pointer; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1.5px solid #292524; }
+  .modal-title { font-size: 18px; font-weight: 900; color: #fde047; }
+  .shop-tabs { display: flex; gap: 6px; margin: 8px 0; overflow-x: auto; padding-bottom: 2px; }
+  .tab-btn { flex: 1; white-space: nowrap; background: #1c1917; border: 1px solid #44403c; color: #d6d3d1; padding: 7px 10px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer; }
   .tab-btn.active { background: #ea580c; color: #fff; border-color: #fed7aa; }
-  .shop-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 7px; padding-right: 4px; align-content: start; }
-  .shop-item { background: #171412; border: 1.5px solid #292524; border-radius: 10px; padding: 8px 9px; display: flex; justify-content: space-between; align-items: center; gap: 7px; }
+  .shop-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; padding-right: 4px; align-content: start; }
+  .shop-item { background: #171412; border: 1.5px solid #292524; border-radius: 11px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .shop-item.unlocked { border-color: #16a34a; }
-  .item-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .item-icon { font-size: 24px; width: 38px; height: 38px; flex-shrink: 0; background: #0c0a09; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .item-name { font-size: 12px; font-weight: 800; color: #fff; }
-  .item-desc { font-size: 10px; color: #a8a29e; }
-  .item-reward { font-size: 10px; color: #4ade80; font-weight: 700; }
-  .item-actions { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
-  .buy-btn { background: linear-gradient(135deg, #16a34a, #22c55e); border: 1px solid #86efac; color: #fff; padding: 5px 8px; border-radius: 7px; font-weight: 800; font-size: 10px; min-width: 82px; text-align: center; cursor: pointer; }
+  .item-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .item-icon { font-size: 26px; width: 42px; height: 42px; flex-shrink: 0; background: #0c0a09; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .item-name { font-size: 13px; font-weight: 800; color: #fff; }
+  .item-desc { font-size: 11px; color: #a8a29e; }
+  .item-reward { font-size: 11px; color: #4ade80; font-weight: 700; }
+  .item-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .buy-btn { background: linear-gradient(135deg, #16a34a, #22c55e); border: 1px solid #86efac; color: #fff; padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; min-width: 88px; text-align: center; cursor: pointer; }
   .buy-btn.locked-poor { background: #262220; border-color: #44403c; color: #78716c; }
   .buy-btn.select-mode { background: linear-gradient(135deg, #2563eb, #3b82f6); border-color: #93c5fd; }
   .buy-btn.equipped { background: #dc2626; border-color: #fca5a5; }
   .buy-btn.upg-btn { background: linear-gradient(135deg, #7c3aed, #9333ea); border-color: #c4b5fd; }
-  .settings-body { max-width: 400px; margin: 12px auto; width: 100%; display: flex; flex-direction: column; gap: 10px; }
-  .setting-row { background: #171412; border: 1px solid #292524; padding: 10px 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; }
-  .toggle-btn { padding: 6px 14px; border-radius: 7px; font-weight: 900; border: none; cursor: pointer; }
+  .settings-body { max-width: 420px; margin: 16px auto; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .setting-row { background: #171412; border: 1px solid #292524; padding: 12px 14px; border-radius: 11px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; }
+  .toggle-btn { padding: 7px 16px; border-radius: 8px; font-weight: 900; border: none; cursor: pointer; }
   .toggle-on { background: #16a34a; color: #fff; }
   .toggle-off { background: #44403c; color: #d6d3d1; }
   select.toggle-btn { background: #262220; color: #fff; border: 1px solid #57534e; }
@@ -69,16 +72,16 @@
       <div class="mult-badge" id="mult-display">⚡ x1.0</div>
     </div>
     <div id="quest-box">
-      <div class="quest-top"><span id="quest-text">🎯 Misja: Traf kukłę</span><span id="quest-reward">+$50</span></div>
+      <div class="quest-top"><span id="quest-text">🎯 Misja</span><span id="quest-reward">+$50</span></div>
       <div class="quest-bar-bg"><div class="quest-bar-fill" id="quest-fill"></div></div>
     </div>
     <div class="hud-right">
       <button class="ui-btn btn-shop" id="ui-shop">🛒 SKLEP</button>
       <button class="ui-btn" id="ui-reset">🔄</button>
-      <button class="ui-btn" id="ui-settings" style="position:relative;z-index:40;">⚙️</button>
+      <button class="ui-btn" id="ui-settings">⚙️</button>
     </div>
   </div>
-  <div id="combo-box"><div class="combo-num" id="combo-num">COMBO x2</div><div class="combo-sub" id="combo-sub">Bonus +5%</div></div>
+  <div id="combo-box"><div class="combo-num" id="combo-num">COMBO x2</div><div class="combo-sub" id="combo-sub">Bonus</div></div>
   <div id="event-banner">🔥 EVENT!</div>
   <canvas id="game"></canvas>
   <div id="bottom-bar-wrap">
@@ -88,18 +91,18 @@
   <div id="shop-modal" class="modal-overlay">
     <div class="modal-header">
       <div class="modal-title" id="shop-title-text">🛒 ARSENAŁ</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span id="shop-money" style="font-weight:900;color:#4ade80;font-size:15px;">$0</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span id="shop-money" style="font-weight:900;color:#4ade80;font-size:16px;">$0</span>
         <button class="ui-btn" id="shop-close-btn">✖</button>
       </div>
     </div>
     <div class="shop-tabs">
-      <button class="tab-btn active" id="tab-m" onclick="switchCategory('melee', this)">🏏 Biała (10)</button>
-      <button class="tab-btn" id="tab-g" onclick="switchCategory('guns', this)">🔫 Palna (10)</button>
-      <button class="tab-btn" id="tab-a" onclick="switchCategory('animals', this)">🦖 Zwierzęta (10)</button>
-      <button class="tab-btn" id="tab-e" onclick="switchCategory('elements', this)">☢️ Żywioły (10)</button>
-      <button class="tab-btn" id="tab-s" onclick="switchCategory('mythic', this)">⚡ Mityczne (10)</button>
-      <button class="tab-btn" id="tab-sk" onclick="switchCategory('skins', this)">🎭 Skórki (12)</button>
+      <button class="tab-btn active" id="tab-m" onclick="switchCategory('melee', this)">🏏 Biała</button>
+      <button class="tab-btn" id="tab-g" onclick="switchCategory('guns', this)">🔫 Palna</button>
+      <button class="tab-btn" id="tab-a" onclick="switchCategory('animals', this)">🦖 Zwierzęta</button>
+      <button class="tab-btn" id="tab-e" onclick="switchCategory('elements', this)">☢️ Żywioły</button>
+      <button class="tab-btn" id="tab-s" onclick="switchCategory('mythic', this)">⚡ Mityczne</button>
+      <button class="tab-btn" id="tab-sk" onclick="switchCategory('skins', this)">🎭 Skórki</button>
       <button class="tab-btn" id="tab-pr" onclick="switchCategory('prestige', this)">🌟 Prestige</button>
     </div>
     <div class="shop-list" id="shop-list"></div>
@@ -117,14 +120,13 @@
           <option value="ru">Русский (RU)</option>
         </select>
       </div>
-      <div class="setting-row"><span id="set-snd-lbl">🔊 Dźwięk / Sound</span><button id="btn-sound" class="toggle-btn toggle-on" onclick="toggleSetting('sound')">ON</button></div>
-      <div class="setting-row"><span id="set-vib-lbl">📳 Wibracje / Vibrate</span><button id="btn-vib" class="toggle-btn toggle-on" onclick="toggleSetting('vibration')">ON</button></div>
+      <div class="setting-row"><span id="set-snd-lbl">🔊 Dźwięk</span><button id="btn-sound" class="toggle-btn toggle-on" onclick="toggleSetting('sound')">ON</button></div>
+      <div class="setting-row"><span id="set-vib-lbl">📳 Wibracje</span><button id="btn-vib" class="toggle-btn toggle-on" onclick="toggleSetting('vibration')">ON</button></div>
       <div class="setting-row" style="border-color:#dc2626;"><span id="set-res-lbl">🗑️ Reset Postępu</span><button class="ui-btn" style="background:#dc2626;border-color:#fca5a5;" onclick="hardReset()">Reset</button></div>
     </div>
   </div>
 </div>
 <script>
-// --- TŁUMACZENIA (PL / EN / RU) ---
 const LANG = {
   pl: { shop: "🛒 SKLEP", quest: "🎯 Misja:", prestigeBtn: "ODRODZENIE (PRESTIGE)", skinsTab: "Skórki", prestigeTab: "Prestige", meleeTab: "Biała", gunsTab: "Palna", animalsTab: "Zwierzęta", elementsTab: "Żywioły", mythicTab: "Mityczne", buy: "Kup", eq: "Założono", use: "Załóż", sel: "Wybrano", choose: "Wybierz", active: "Aktywna", settings: "⚙️ USTAWIENIA" },
   en: { shop: "🛒 SHOP", quest: "🎯 Quest:", prestigeBtn: "REBIRTH (PRESTIGE)", skinsTab: "Skins", prestigeTab: "Prestige", meleeTab: "Melee", gunsTab: "Guns", animalsTab: "Animals", elementsTab: "Elements", mythicTab: "Mythic", buy: "Buy", eq: "Equipped", use: "Equip", sel: "Selected", choose: "Select", active: "Active", settings: "⚙️ SETTINGS" },
@@ -146,91 +148,86 @@ function updateLangUI() {
   document.getElementById('tab-s').textContent = `⚡ ${t('mythicTab')} (10)`;
 }
 
-// --- 50 UNIKALNYCH BRONI W 5 KATEGORIACH ---
+// 50 BRONI
 const WEAPONS = [
-  // 1. Biała / Melee (1-10)
-  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, upgBase: 15, reward: 2, vib: [25], desc: 'Łap i ciskaj kukłą' },
-  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 35, upgBase: 50, reward: 6, vib: [45], desc: 'Mocne ciosy z odrzutem' },
-  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 220, upgBase: 280, reward: 15, vib: [30, 15, 30], desc: 'Ciągłe cięcie kukły' },
-  { id: 'anvil', cat: 'melee', name: 'Kowadło 100T', icon: '⚓', cost: 1300, upgBase: 1500, reward: 95, vib: [120, 30, 50], desc: 'Żelazny blok z góry' },
+  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, upgBase: 15, reward: 2, vib: [25], desc: 'Łap i ciskaj' },
+  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 35, upgBase: 50, reward: 6, vib: [45], desc: 'Ciosy z odrzutem' },
+  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 220, upgBase: 280, reward: 15, vib: [30, 15, 30], desc: 'Ciągłe cięcie' },
+  { id: 'anvil', cat: 'melee', name: 'Kowadło 100T', icon: '⚓', cost: 1300, upgBase: 1500, reward: 95, vib: [120, 30, 50], desc: 'Żelazny blok' },
   { id: 'hammer', cat: 'melee', name: 'Młot Thora', icon: '🔨', cost: 7500, upgBase: 9000, reward: 380, vib: [110, 25, 140], desc: 'Młot z wyładowaniem' },
-  { id: 'katana', cat: 'melee', name: 'Katana Mroku', icon: '🗡️', cost: 38000, upgBase: 45000, reward: 1500, vib: [60, 20, 60], desc: 'Błyskawiczne cięcie' },
+  { id: 'katana', cat: 'melee', name: 'Katana Mroku', icon: '🗡️', cost: 38000, upgBase: 45000, reward: 1500, vib: [60, 20, 60], desc: 'Szybkie cięcie' },
   { id: 'mace', cat: 'melee', name: 'Kolczasta Buława', icon: '🛡️', cost: 180000, upgBase: 210000, reward: 6200, vib: [130, 30, 90], desc: 'Miażdżący cios' },
   { id: 'spear', cat: 'melee', name: 'Włócznia Spartan', icon: '🔱', cost: 850000, upgBase: 980000, reward: 28000, vib: [80, 25, 80], desc: 'Przebija manekin' },
-  { id: 'excalibur', cat: 'melee', name: 'Miecz Excalibur', icon: '⚔️', cost: 4000000, upgBase: 4600000, reward: 125000, vib: [150, 40, 180], desc: 'Legendarny miecz królewski' },
+  { id: 'excalibur', cat: 'melee', name: 'Miecz Excalibur', icon: '⚔️', cost: 4000000, upgBase: 4600000, reward: 125000, vib: [150, 40, 180], desc: 'Królewski miecz' },
   { id: 'reaper', cat: 'melee', name: 'Kosa Śmierci', icon: '🏴‍☠️', cost: 18000000, upgBase: 21000000, reward: 550000, vib: [180, 50, 220], desc: 'Kosiarka dusz' },
-
-  // 2. Palna / Guns (11-20)
+  
   { id: 'pistol', cat: 'guns', name: 'Pistolet 9mm', icon: '🔫', cost: 75000000, upgBase: 85000000, reward: 2400000, vib: [45], desc: 'Szybkie pestki' },
-  { id: 'shotgun', cat: 'guns', name: 'Strzelba Kaliber 12', icon: '💥', cost: 320000000, upgBase: 360000000, reward: 9800000, vib: [95, 25, 50], desc: 'Potężny śrut' },
-  { id: 'laser', cat: 'guns', name: 'Minigun Laserowy', icon: '☄️', cost: 1400000000, upgBase: 1600000000, reward: 39000000, vib: [25, 15, 25], desc: 'Strumień plazmy' },
+  { id: 'shotgun', cat: 'guns', name: 'Strzelba', icon: '💥', cost: 320000000, upgBase: 360000000, reward: 9800000, vib: [95, 25, 50], desc: 'Potężny śrut' },
+  { id: 'laser', cat: 'guns', name: 'Minigun Laserowy', icon: '☄️', cost: 1400000000, upgBase: 1600000000, reward: 39000000, vib: [25, 15, 25], desc: 'Plazma' },
   { id: 'rpg', cat: 'guns', name: 'Wyrzutnia RPG', icon: '🚀', cost: 6000000000, upgBase: 6800000000, reward: 160000000, vib: [160, 40, 220, 40, 100], desc: 'Rakieta burząca' },
-  { id: 'sniper', cat: 'guns', name: 'Karabin Snajperski', icon: '🎯', cost: 26000000000, upgBase: 30000000000, reward: 720000000, vib: [140, 30, 80], desc: 'Precyzyjny strzał w głowę' },
-  { id: 'flak', cat: 'guns', name: 'Działo Flak', icon: '💣', cost: 110000000000, upgBase: 130000000000, reward: 3100000000, vib: [180, 50, 180], desc: 'Rozpryskowe odłamki' },
+  { id: 'sniper', cat: 'guns', name: 'Snajperka', icon: '🎯', cost: 26000000000, upgBase: 30000000000, reward: 720000000, vib: [140, 30, 80], desc: 'Precyzyjny strzał' },
+  { id: 'flak', cat: 'guns', name: 'Działo Flak', icon: '💣', cost: 110000000000, upgBase: 130000000000, reward: 3100000000, vib: [180, 50, 180], desc: 'Odłamki' },
   { id: 'plasma', cat: 'guns', name: 'Karabin Plazmowy', icon: '🔮', cost: 480000000000, upgBase: 550000000000, reward: 14000000000, vib: [90, 30, 90], desc: 'Energia obcych' },
   { id: 'gatling', cat: 'guns', name: 'Ciężki Gatling', icon: '🌀', cost: 2100000000000, upgBase: 2400000000000, reward: 62000000000, vib: [20, 15, 20], desc: 'Ogień ciągły' },
   { id: 'orbital', cat: 'guns', name: 'Działo Orbitalne', icon: '🛰️', cost: 9000000000000, upgBase: 10000000000000, reward: 280000000000, vib: [120, 30, 260, 50, 150], desc: 'Promień z kosmosu' },
-  { id: 'deathray', cat: 'guns', name: 'Promień Zagłady', icon: '🔦', cost: 38000000000000, upgBase: 44000000000000, reward: 1200000000000, vib: [200, 60, 250], desc: 'Spala wszystko na popiół' },
+  { id: 'deathray', cat: 'guns', name: 'Promień Zagłady', icon: '🔦', cost: 38000000000000, upgBase: 44000000000000, reward: 1200000000000, vib: [200, 60, 250], desc: 'Spala w popiół' },
 
-  // 3. Zwierzęta / Animals (21-30)
-  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 150000000000000, upgBase: 170000000000000, reward: 5000000000000, vib: [25, 20, 25], desc: 'Żądlący rój pszczół' },
-  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 650000000000000, upgBase: 750000000000000, reward: 21000000000000, vib: [110, 30, 120], desc: 'Szczęki morskiego potwora' },
-  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 2800000000000000, upgBase: 3200000000000000, reward: 90000000000000, vib: [140, 35, 160], desc: 'Potężna szarża byka' },
-  { id: 'dragon', cat: 'animals', name: 'Smok Wawelski', icon: '🐉', cost: 12000000000000000, upgBase: 14000000000000000, reward: 390000000000000, vib: [130, 30, 180, 30, 90], desc: 'Zieje ogniem z nieba' },
-  { id: 'trex', cat: 'animals', name: 'Król T-Rex', icon: '🦖', cost: 50000000000000000, upgBase: 58000000000000000, reward: 1700000000000000, vib: [180, 40, 240, 40, 140], desc: 'Tupnięcie dinozaura' },
-  { id: 'kraken', cat: 'animals', name: 'Morski Kraken', icon: '🦑', cost: 220000000000000000, upgBase: 250000000000000000, reward: 7500000000000000, vib: [160, 40, 190], desc: 'Mecze macek z głębin' },
-  { id: 'griffin', cat: 'animals', name: 'Boski Gryf', icon: '🦅', cost: 950000000000000000, upgBase: 1100000000000000000, reward: 33000000000000000, vib: [130, 30, 150], desc: 'Szpony mitycznego ptaka' },
-  { id: 'cerberus', cat: 'animals', name: 'Piekielny Cerber', icon: '🐕', cost: 4200000000000000000, upgBase: 4800000000000000000, reward: 150000000000000000, vib: [170, 45, 170], desc: 'Trzy głowy pełne ognia' },
-  { id: 'hydra', cat: 'animals', name: 'Hydra Lernejska', icon: '🐍', cost: 18000000000000000000, upgBase: 21000000000000000000, reward: 680000000000000000, vib: [190, 50, 210], desc: 'Wielogłowy potwór' },
-  { id: 'behemoth', cat: 'animals', name: 'Kosmiczny Behemoth', icon: '🦖', cost: 80000000000000000000, upgBase: 92000000000000000000, reward: 3100000000000000000, vib: [220, 60, 260], desc: 'Bestia z innego wymiaru' },
+  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 150000000000000, upgBase: 170000000000000, reward: 5000000000000, vib: [25, 20, 25], desc: 'Żądlący rój' },
+  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 650000000000000, upgBase: 750000000000000, reward: 21000000000000, vib: [110, 30, 120], desc: 'Szczęki potwora' },
+  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 2800000000000000, upgBase: 3200000000000000, reward: 90000000000000, vib: [140, 35, 160], desc: 'Szarża byka' },
+  { id: 'dragon', cat: 'animals', name: 'Smok Wawelski', icon: '🐉', cost: 12000000000000000, upgBase: 14000000000000000, reward: 390000000000000, vib: [130, 30, 180, 30, 90], desc: 'Zieje ogniem' },
+  { id: 'trex', cat: 'animals', name: 'Król T-Rex', icon: '🦖', cost: 50000000000000000, upgBase: 58000000000000000, reward: 1700000000000000, vib: [180, 40, 240, 40, 140], desc: 'Tupnięcie dino' },
+  { id: 'kraken', cat: 'animals', name: 'Morski Kraken', icon: '🦑', cost: 220000000000000000, upgBase: 250000000000000000, reward: 7500000000000000, vib: [160, 40, 190], desc: 'Mecze macek' },
+  { id: 'griffin', cat: 'animals', name: 'Boski Gryf', icon: '🦅', cost: 950000000000000000, upgBase: 1100000000000000000, reward: 33000000000000000, vib: [130, 30, 150], desc: 'Szpony ptaka' },
+  { id: 'cerberus', cat: 'animals', name: 'Piekielny Cerber', icon: '🐕', cost: 4200000000000000000, upgBase: 4800000000000000000, reward: 150000000000000000, vib: [170, 45, 170], desc: 'Trzy głowy ognia' },
+  { id: 'hydra', cat: 'animals', name: 'Hydra', icon: '🐍', cost: 18000000000000000000, upgBase: 21000000000000000000, reward: 680000000000000000, vib: [190, 50, 210], desc: 'Wielogłowy potwór' },
+  { id: 'behemoth', cat: 'animals', name: 'Behemoth', icon: '🦖', cost: 80000000000000000000, upgBase: 92000000000000000000, reward: 3100000000000000000, vib: [220, 60, 260], desc: 'Bestia wymiaru' },
 
-  // 4. Żywioły / Elements (31-40)
-  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 350000000000000000000, upgBase: 400000000000000000000, reward: 14000000000000000000, vib: [40, 20, 40], desc: 'Strumień żywego ognia' },
-  { id: 'freeze', cat: 'elements', name: 'Mroźna Zamieć', icon: '❄️', cost: 1500000000000000000000, upgBase: 1800000000000000000000, reward: 65000000000000000000, vib: [90, 25, 90], desc: 'Zamraża manekin (x2.5 kasy)' },
-  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 7000000000000000000000, upgBase: 8200000000000000000000, reward: 300000000000000000000, vib: [100, 20, 180, 20, 80], desc: 'Błyskawica z Olimpu' },
-  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 32000000000000000000000, upgBase: 38000000000000000000000, reward: 1400000000000000000000, vib: [60, 40, 80], desc: 'Wciąga kukłę w wir' },
-  { id: 'nuke', cat: 'elements', name: 'Bomba Atomowa', icon: '☢️', cost: 150000000000000000000000, upgBase: 180000000000000000000000, reward: 6800000000000000000000, vib: [220, 50, 320, 60, 200, 40, 120], desc: 'Ostateczna zagłada' },
-  { id: 'tsunami', cat: 'elements', name: 'Fala Tsunami', icon: '🌊', cost: 700000000000000000000000, upgBase: 820000000000000000000000, reward: 32000000000000000000000, vib: [150, 40, 150], desc: 'Potężny potop wody' },
-  { id: 'magma', cat: 'elements', name: 'Erupcja Magmy', icon: '🌋', cost: 3300000000000000000000000, upgBase: 3900000000000000000000000, reward: 150000000000000000000000, vib: [180, 40, 190], desc: 'Rzeki wrzącej lawy' },
-  { id: 'supernova', cat: 'elements', name: 'Supernova Słoneczna', icon: '☀️', cost: 15000000000000000000000000, upgBase: 18000000000000000000000000, reward: 720000000000000000000000, vib: [250, 60, 300], desc: 'Wybuch gwiazdy' },
+  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 350000000000000000000, upgBase: 400000000000000000000, reward: 14000000000000000000, vib: [40, 20, 40], desc: 'Żywy ogień' },
+  { id: 'freeze', cat: 'elements', name: 'Mroźna Zamieć', icon: '❄️', cost: 1500000000000000000000, upgBase: 1800000000000000000000, reward: 65000000000000000000, vib: [90, 25, 90], desc: 'Zamraża manekin' },
+  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 7000000000000000000000, upgBase: 8200000000000000000000, reward: 300000000000000000000, vib: [100, 20, 180, 20, 80], desc: 'Błyskawica z nieba' },
+  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 32000000000000000000000, upgBase: 38000000000000000000000, reward: 1400000000000000000000, vib: [60, 40, 80], desc: 'Wciąga w wir' },
+  { id: 'nuke', cat: 'elements', name: 'Bomba Atomowa', icon: '☢️', cost: 150000000000000000000000, upgBase: 180000000000000000000000, reward: 6800000000000000000000, vib: [220, 50, 320, 60, 200, 40, 120], desc: 'Zagłada nuklearna' },
+  { id: 'tsunami', cat: 'elements', name: 'Fala Tsunami', icon: '🌊', cost: 700000000000000000000000, upgBase: 820000000000000000000000, reward: 32000000000000000000000, vib: [150, 40, 150], desc: 'Potężny potop' },
+  { id: 'magma', cat: 'elements', name: 'Erupcja Magmy', icon: '🌋', cost: 3300000000000000000000000, upgBase: 3900000000000000000000000, reward: 150000000000000000000000, vib: [180, 40, 190], desc: 'Wrząca lawa' },
+  { id: 'supernova', cat: 'elements', name: 'Supernova', icon: '☀️', cost: 15000000000000000000000000, upgBase: 18000000000000000000000000, reward: 720000000000000000000000, vib: [250, 60, 300], desc: 'Wybuch gwiazdy' },
   { id: 'antimatter', cat: 'elements', name: 'Działo Anty-Materii', icon: '⚛️', cost: 70000000000000000000000000, upgBase: 82000000000000000000000000, reward: 3500000000000000000000000, vib: [280, 70, 350], desc: 'Rozrywa cząstki' },
-  { id: 'singularity', cat: 'elements', name: 'Wieczna Singularność', icon: '🌌', cost: 320000000000000000000000000, upgBase: 380000000000000000000000000, reward: 17000000000000000000000000, vib: [300, 80, 400], desc: 'Koniec czasu i przestrzeni' },
+  { id: 'singularity', cat: 'elements', name: 'Singularność', icon: '🌌', cost: 320000000000000000000000000, upgBase: 380000000000000000000000000, reward: 17000000000000000000000000, vib: [300, 80, 400], desc: 'Koniec przestrzeni' },
 
-  // 5. Mityczne / Mythic (41-50)
   { id: 'mjolnir', cat: 'mythic', name: 'Młot Przeznaczenia', icon: '🔨', cost: 1500000000000000000000000000, upgBase: 1800000000000000000000000000, reward: 85000000000000000000000000, vib: [180, 40, 220], desc: 'Młot bogów' },
   { id: 'zeusbolt', cat: 'mythic', name: 'Gniew Zeusa', icon: '⚡', cost: 7500000000000000000000000000, upgBase: 9000000000000000000000000000, reward: 420000000000000000000000000, vib: [200, 50, 250], desc: 'Boskie pioruny' },
-  { id: 'poseidon', cat: 'mythic', name: 'Trójząb Posejdona', icon: '🔱', cost: 36000000000000000000000000000, upgBase: 44000000000000000000000000000, reward: 2100000000000000000000000000, vib: [160, 40, 180], desc: 'Władca oceanów' },
+  { id: 'poseidon', cat: 'mythic', name: 'Trójząb', icon: '🔱', cost: 36000000000000000000000000000, upgBase: 44000000000000000000000000000, reward: 2100000000000000000000000000, vib: [160, 40, 180], desc: 'Władca oceanów' },
   { id: 'hades', cat: 'mythic', name: 'Bramy Hadesu', icon: '🔥', cost: 180000000000000000000000000000, upgBase: 220000000000000000000000000000, reward: 11000000000000000000000000000, vib: [220, 60, 260], desc: 'Ogień podziemi' },
   { id: 'kronos', cat: 'mythic', name: 'Klinga Kronosa', icon: '⏳', cost: 900000000000000000000000000000, upgBase: 1100000000000000000000000000000, reward: 58000000000000000000000000000, vib: [240, 70, 300], desc: 'Zatrzymuje czas' },
   { id: 'infinity', cat: 'mythic', name: 'Rękawica Nieskończoności', icon: '🧤', cost: 4500000000000000000000000000000, upgBase: 5500000000000000000000000000000, reward: 310000000000000000000000000000, vib: [300, 100, 350], desc: 'Jedno pstryknięcie' },
-  { id: 'cosmos', cat: 'mythic', name: 'Serce Kosmosu', icon: '💎', cost: 23000000000000000000000000000000, upgBase: 28000000000000000000000000000000, reward: 1700000000000000000000000000000, vib: [260, 80, 320], desc: 'Cała energia wszechświata' },
-  { id: 'dimension', cat: 'mythic', name: 'Przełamywacz Wymiarów', icon: '🚪', cost: 120000000000000000000000000000000, upgBase: 150000000000000000000000000000000, reward: 9500000000000000000000000000000, vib: [320, 90, 380], desc: 'Otwiera portale do niczego' },
+  { id: 'cosmos', cat: 'mythic', name: 'Serce Kosmosu', icon: '💎', cost: 23000000000000000000000000000000, upgBase: 28000000000000000000000000000000, reward: 1700000000000000000000000000000, vib: [260, 80, 320], desc: 'Energia wszechświata' },
+  { id: 'dimension', cat: 'mythic', name: 'Przełamywacz Wymiarów', icon: '🚪', cost: 120000000000000000000000000000000, upgBase: 150000000000000000000000000000000, reward: 9500000000000000000000000000000, vib: [320, 90, 380], desc: 'Portale do niczego' },
   { id: 'godhand', cat: 'mythic', name: 'Ręka Stwórcy', icon: '✨', cost: 650000000000000000000000000000000, upgBase: 800000000000000000000000000000000, reward: 55000000000000000000000000000000, vib: [350, 100, 420], desc: 'Boska moc kreacji' },
-  { id: 'omnitool', cat: 'mythic', name: 'Ostateczny Omnitool', icon: '👑', cost: 3500000000000000000000000000000000, upgBase: 4500000000000000000000000000000000, reward: 320000000000000000000000000000000, vib: [400, 120, 500], desc: 'Absolutna dominacja nad grą' }
+  { id: 'omnitool', cat: 'mythic', name: 'Ostateczny Omnitool', icon: '👑', cost: 3500000000000000000000000000000000, upgBase: 4500000000000000000000000000000000, reward: 320000000000000000000000000000000, vib: [400, 120, 500], desc: 'Absolutna dominacja' }
 ];
 
-// --- 12 SKÓREK Z DOKŁADNYM BALANSEM BONUSÓW DO +100% (x2.0) ---
+// 12 SKÓREK Z BALANSEM OD +0% DO +100% (x2.0)
 const SKINS = [
-  { id: 'classic', name: 'Klasyczny Buddy', icon: '🧸', cost: 0, mult: 1.0, headCol: '#d9a773', shirtCol: '#2563eb', pantsCol: '#1e293b', desc: 'Standardowy manekin (+0%)' },
+  { id: 'classic', name: 'Klasyczny Buddy', icon: '🧸', cost: 0, mult: 1.0, headCol: '#d9a773', shirtCol: '#2563eb', pantsCol: '#1e293b', desc: '+0% do kasy' },
   { id: 'ninja', name: 'Cień Ninja', icon: '🥷', cost: 80000, mult: 1.05, headCol: '#334155', shirtCol: '#0f172a', pantsCol: '#020617', desc: '+5% do kasy' },
-  { id: 'zombie', name: 'Zombie Buddy', icon: '🧟', cost: 1500000, mult: 1.12, headCol: '#65a30d', shirtCol: '#451a03', pantsCol: '#1c1917', desc: '+12% do kasy' },
-  { id: 'knight', name: 'Stalowy Rycerz', icon: '🛡️', cost: 25000000, mult: 1.20, headCol: '#94a3b8', shirtCol: '#64748b', pantsCol: '#334155', desc: '+20% do kasy' },
-  { id: 'robot', name: 'Cyber-Bot X', icon: '🤖', cost: 400000000, mult: 1.30, headCol: '#64748b', shirtCol: '#0891b2', pantsCol: '#1e293b', desc: '+30% do kasy' },
+  { id: 'zombie', name: 'Zombie', icon: '🧟', cost: 1500000, mult: 1.12, headCol: '#65a30d', shirtCol: '#451a03', pantsCol: '#1c1917', desc: '+12% do kasy' },
+  { id: 'knight', name: 'Rycerz', icon: '🛡️', cost: 25000000, mult: 1.20, headCol: '#94a3b8', shirtCol: '#64748b', pantsCol: '#334155', desc: '+20% do kasy' },
+  { id: 'robot', name: 'Cyber-Bot', icon: '🤖', cost: 400000000, mult: 1.30, headCol: '#64748b', shirtCol: '#0891b2', pantsCol: '#1e293b', desc: '+30% do kasy' },
   { id: 'demon', name: 'Władca Piekieł', icon: '😈', cost: 7500000000, mult: 1.42, headCol: '#dc2626', shirtCol: '#450a0a', pantsCol: '#18181b', desc: '+42% do kasy' },
-  { id: 'samurai', name: 'Ronin Samuraj', icon: '⛩️', cost: 130000000000, mult: 1.55, headCol: '#b91c1c', shirtCol: '#172554', pantsCol: '#0f172a', desc: '+55% do kasy' },
-  { id: 'vampire', name: 'Mroczny Wampir', icon: '🧛', cost: 2200000000000, mult: 1.68, headCol: '#e2e8f0', shirtCol: '#581c87', pantsCol: '#09090b', desc: '+68% do kasy' },
+  { id: 'samurai', name: 'Samuraj', icon: '⛩️', cost: 130000000000, mult: 1.55, headCol: '#b91c1c', shirtCol: '#172554', pantsCol: '#0f172a', desc: '+55% do kasy' },
+  { id: 'vampire', name: 'Wampir', icon: '🧛', cost: 2200000000000, mult: 1.68, headCol: '#e2e8f0', shirtCol: '#581c87', pantsCol: '#09090b', desc: '+68% do kasy' },
   { id: 'gold', name: 'Złoty VIP', icon: '👑', cost: 38000000000000, mult: 1.80, headCol: '#facc15', shirtCol: '#ca8a04', pantsCol: '#854d0e', desc: '+80% do kasy' },
-  { id: 'phantom', name: 'Widmowy Duch', icon: '👻', cost: 650000000000000, mult: 1.90, headCol: '#93c5fd', shirtCol: '#1e3a8a', pantsCol: '#0f172a', desc: '+90% do kasy' },
+  { id: 'phantom', name: 'Widmo', icon: '👻', cost: 650000000000000, mult: 1.90, headCol: '#93c5fd', shirtCol: '#1e3a8a', pantsCol: '#0f172a', desc: '+90% do kasy' },
   { id: 'cosmic', name: 'Kosmiczny Byt', icon: '👽', cost: 11000000000000000, mult: 1.96, headCol: '#a855f7', shirtCol: '#581c87', pantsCol: '#1e1b4b', desc: '+96% do kasy' },
-  { id: 'god', name: 'Awatar Boga', icon: '✨', cost: 180000000000000000, mult: 2.0, headCol: '#fde047', shirtCol: '#eab308', pantsCol: '#713f12', desc: 'Maksymalny bonus +100% (x2.0)' }
+  { id: 'god', name: 'Awatar Boga', icon: '✨', cost: 180000000000000000, mult: 2.0, headCol: '#fde047', shirtCol: '#eab308', pantsCol: '#713f12', desc: 'Max +100% (x2.0)' }
 ];
 
 const THEMES = [
-  { id: 'box', name: 'Kartonowe Pudełko', reqPrestige: 0, c1: '#8c6a46', c2: '#4a331d', border: '#362312', line: 'rgba(30,18,8,0.45)' },
-  { id: 'lab', name: 'Laboratorium Sci-Fi', reqPrestige: 1, c1: '#0f293a', c2: '#07131c', border: '#06b6d4', line: 'rgba(6,182,212,0.22)' },
-  { id: 'vault', name: 'Złoty Sejf', reqPrestige: 2, c1: '#715310', c2: '#2e2105', border: '#facc15', line: 'rgba(250,204,21,0.25)' },
-  { id: 'volcano', name: 'Wulkaniczna Kuźnia', reqPrestige: 3, c1: '#451208', c2: '#1a0502', border: '#ef4444', line: 'rgba(239,68,68,0.28)' },
-  { id: 'space', name: 'Kosmiczna Pustka', reqPrestige: 4, c1: '#1e1035', c2: '#070210', border: '#c084fc', line: 'rgba(192,132,252,0.25)' }
+  { id: 'box', name: 'Karton', reqPrestige: 0, c1: '#8c6a46', c2: '#4a331d', border: '#362312', line: 'rgba(30,18,8,0.45)' },
+  { id: 'lab', name: 'Lab', reqPrestige: 1, c1: '#0f293a', c2: '#07131c', border: '#06b6d4', line: 'rgba(6,182,212,0.22)' },
+  { id: 'vault', name: 'Sejf', reqPrestige: 2, c1: '#715310', c2: '#2e2105', border: '#facc15', line: 'rgba(250,204,21,0.25)' },
+  { id: 'volcano', name: 'Wulkan', reqPrestige: 3, c1: '#451208', c2: '#1a0502', border: '#ef4444', line: 'rgba(239,68,68,0.28)' },
+  { id: 'space', name: 'Kosmos', reqPrestige: 4, c1: '#1e1035', c2: '#070210', border: '#c084fc', line: 'rgba(192,132,252,0.25)' }
 ];
 function fmt(n) {
   if (n < 1000) return Math.floor(n).toString();
@@ -309,10 +306,7 @@ WEAPONS.forEach(w => { weaponLevels[w.id] = 1; });
 const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
 let width, height;
 
-function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-}
+function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
 window.addEventListener('resize', resize);
 
 function loadSave() {
@@ -662,7 +656,6 @@ function onPointerDown(e) {
     return;
   }
 
-  // Meteor shower kliknięcia
   if (meteorShower) {
     for (let i = meteorShower.length - 1; i >= 0; i--) {
       let m = meteorShower[i];
@@ -746,7 +739,7 @@ let beeStingTick = 0;
 function spawnBeesBalanced(x, y, reward) {
   if (bees.length > 0) {
     bees.forEach(b => { b.timer = 180; b.reward = reward; });
-    hitDummy(reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 8, -4, 4, 'hit', [25, 20, 25]);
+    hitDummy(reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 8, -4, 4, 'hit', [20, 15, 20]);
     return;
   }
   for (let i = 0; i < 8; i++) bees.push({ x: x + (Math.random() - 0.5) * 60, y: y + (Math.random() - 0.5) * 60, vx: 0, vy: 0, timer: 180, reward });
@@ -812,7 +805,6 @@ function update() {
     if (berserkTimer === 0) { banner.style.display = 'none'; updateHUD(); }
   }
 
-  // Nowe eventy: Deszcz monet (Meteor Shower)
   if (meteorShower) {
     for (let i = meteorShower.length - 1; i >= 0; i--) {
       let m = meteorShower[i];
@@ -1017,7 +1009,6 @@ function drawDummy() {
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath(); ctx.ellipse(dummy.chest.x, b.bottom - 4, 38, 8, 0, 0, Math.PI * 2); ctx.fill();
 
-  // Rysowanie czerwonych plam / śladów walki na kukle
   bloodSplats.forEach(bs => {
     ctx.fillStyle = `rgba(185, 28, 28, ${bs.alpha})`;
     ctx.beginPath(); ctx.arc(bs.x, bs.y, bs.size, 0, Math.PI * 2); ctx.fill();
