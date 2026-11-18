@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kick the Dummy 2D</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  body {
+    background: #1a1612;
+    color: #fff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Górny pasek UI */
+  #top-bar {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .money-box {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    border: 2px solid #66bb6a;
+    padding: 8px 16px;
+    border-radius: 14px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .ui-btn {
+    background: linear-gradient(135deg, #2c2520, #1f1a17);
+    border: 2px solid #6d5848;
+    color: #f5ebe6;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+    transition: transform 0.08s;
+  }
+  .ui-btn:active {
+    transform: scale(0.92);
+  }
+  .btn-shop {
+    background: linear-gradient(135deg, #e65100, #ff8f00);
+    border-color: #ffd54f;
+    color: #fff;
+  }
+
+  /* Dolny pasek szybkiego wyboru broni */
+  #bottom-bar {
+    position: absolute;
+    bottom: 12px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 4px;
+    z-index: 20;
+    scrollbar-width: none;
+  }
+  #bottom-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .weapon-slot {
+    flex: 0 0 auto;
+    background: rgba(32, 26, 22, 0.92);
+    border: 2px solid #5c4b3e;
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #eee;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    transition: transform 0.1s, border-color 0.15s;
+  }
+  .weapon-slot:active {
+    transform: scale(0.93);
+  }
+  .weapon-slot.active {
+    background: linear-gradient(135deg, #c62828, #e53935);
+    border-color: #ff8a80;
+    box-shadow: 0 0 12px rgba(229, 57, 53, 0.7);
+  }
+  .weapon-slot .icon {
+    font-size: 18px;
+  }
+
+  /* Modal Sklepu */
+  #shop-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 8, 6, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: none;
+    flex-direction: column;
+    padding: 16px;
+  }
+  #shop-modal.open {
+    display: flex;
+  }
+  .shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #4a3c32;
+  }
+  .shop-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffd54f;
+  }
+  .shop-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 12px 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    white-space: nowrap;
+    background: #2b231d;
+    border: 1px solid #5c4b3e;
+    color: #ccc;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: #ff8f00;
+    color: #111;
+    border-color: #ffe082;
+  }
+  .shop-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 4px;
+  }
+  .shop-item {
+    background: #251f1a;
+    border: 2px solid #4a3c32;
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .shop-item.unlocked {
+    border-color: #4caf50;
+  }
+  .item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .item-icon {
+    font-size: 30px;
+    width: 46px;
+    height: 46px;
+    background: #1a1512;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .item-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .item-desc {
+    font-size: 12px;
+    color: #b0a095;
+    margin-top: 2px;
+  }
+  .item-reward {
+    font-size: 12px;
+    color: #81c784;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .buy-btn {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    border: 1px solid #81c784;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 13px;
+    min-width: 95px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .buy-btn.locked-poor {
+    background: #3e352f;
+    border-color: #5c4e46;
+    color: #888;
+  }
+  .buy-btn.select-mode {
+    background: linear-gradient(135deg, #1565c0, #1e88e5);
+    border-color: #64b5f6;
+  }
+  .buy-btn.equipped {
+    background: #c62828;
+    border-color: #ff8a80;
+  }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div class="money-box">
+    <span>💵</span>
+    <span id="money-display">$0</span>
+  </div>
+  <div class="top-actions">
+    <button class="ui-btn btn-shop" onclick="toggleShop()">🛒 SKLEP</button>
+    <button class="ui-btn" onclick="resetDummy()">🔄 Reset</button>
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="bottom-bar"></div>
+
+<!-- OKNO SKLEPU -->
+<div id="shop-modal">
+  <div class="shop-header">
+    <div class="shop-title">🛒 ARSENAŁ</div>
+    <button class="ui-btn" onclick="toggleShop()">✖ Zamknij</button>
+  </div>
+  <div class="shop-tabs">
+    <button class="tab-btn active" onclick="switchCategory('melee', this)">🏏 Biała</button>
+    <button class="tab-btn" onclick="switchCategory('guns', this)">🔫 Palna</button>
+    <button class="tab-btn" onclick="switchCategory('animals', this)">🦈 Zwierzęta</button>
+    <button class="tab-btn" onclick="switchCategory('elements', this)">⚡ Żywioły</button>
+  </div>
+  <div class="shop-list" id="shop-list"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let width, height;
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- KATALOG PRZEDMIOTÓW ---
+const WEAPONS = [
+  // Ręczne / Biała broń
+  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, reward: 2, desc: 'Łap i rzucaj kukłą o ściany pudełka' },
+  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 20, reward: 5, desc: 'Machnij lub kliknij, by mocno uderzyć' },
+  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 75, reward: 12, desc: 'Przytrzymaj na kukle dla ciągłych obrażeń' },
+
+  // Broń palna
+  { id: 'pistol', cat: 'guns', name: 'Pistolet', icon: '🔫', cost: 200, reward: 15, desc: 'Celne pojedyncze strzały z odrzutem' },
+  { id: 'shotgun', cat: 'guns', name: 'Strzelba', icon: '💥', cost: 600, reward: 40, desc: 'Chmura śrutu i potężny odrzut' },
+  { id: 'laser', cat: 'guns', name: 'Minigun Laser', icon: '☄️', cost: 1600, reward: 80, desc: 'Przytrzymaj palec, by palić wiązką lasera' },
+
+  // Zwierzęta
+  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 3500, reward: 60, desc: 'Wściekły rój żądli kukłę przez kilka sekund' },
+  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 8500, reward: 150, desc: 'Wyskakuje z boku i taranuje kukłę szczękami' },
+  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 20000, reward: 300, desc: 'Potężna szarża przez całe pudełko' },
+
+  // Żywioły i Kataklizmy
+  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 45000, reward: 120, desc: 'Podpala kukłę, generując ciągłą kasę' },
+  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 110000, reward: 250, desc: 'Potężne uderzenie błyskawicy z nieba' },
+  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 250000, reward: 500, desc: 'Wciąga kukłę w wir, kręci nią i eksploduje' }
+];
+
+// --- STAN GRY I ZAPIS (LOCALSTORAGE) ---
+let money = 0;
+let unlocked = ['hand'];
+let currentWeapon = 'hand';
+let currentShopCat = 'melee';
+
+function loadSave() {
+  try {
+    const savedMoney = localStorage.getItem('ktb_money');
+    const savedUnlocked = localStorage.getItem('ktb_unlocked');
+    if (savedMoney !== null) money = parseInt(savedMoney, 10) || 0;
+    if (savedUnlocked) unlocked = JSON.parse(savedUnlocked);
+    if (!unlocked.includes('hand')) unlocked.unshift('hand');
+  } catch (e) {}
+  updateMoneyUI();
+  renderBottomBar();
+}
+
+function saveGame() {
+  try {
+    localStorage.setItem('ktb_money', money);
+    localStorage.setItem('ktb_unlocked', JSON.stringify(unlocked));
+  } catch (e) {}
+}
+
+function addMoney(amount, x, y) {
+  money += amount;
+  updateMoneyUI();
+  saveGame();
+  if (x !== undefined && y !== undefined) {
+    floatingTexts.push({
+      x: x + (Math.random() - 0.5) * 30,
+      y: y - 10,
+      text: `+$${amount}`,
+      vy: -2.2,
+      life: 1.0,
+      scale: amount >= 100 ? 1.35 : 1.0
+    });
+  }
+}
+
+function updateMoneyUI() {
+  document.getElementById('money-display').textContent = `$${money.toLocaleString('pl-PL')}`;
+}
+
+// --- INTERFEJS SKLEPU I PASKA DOLNEGO ---
+function renderBottomBar() {
+  const bar = document.getElementById('bottom-bar');
+  bar.innerHTML = '';
+  WEAPONS.forEach(w => {
+    if (!unlocked.includes(w.id)) return;
+    const btn = document.createElement('div');
+    btn.className = 'weapon-slot' + (currentWeapon === w.id ? ' active' : '');
+    btn.innerHTML = `<span class="icon">${w.icon}</span><span>${w.name}</span>`;
+    btn.onclick = () => {
+      currentWeapon = w.id;
+      renderBottomBar();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+function toggleShop() {
+  const modal = document.getElementById('shop-modal');
+  modal.classList.toggle('open');
+  if (modal.classList.contains('open')) {
+    renderShopList();
+  }
+}
+
+function switchCategory(cat, btn) {
+  currentShopCat = cat;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderShopList();
+}
+
+function renderShopList() {
+  const list = document.getElementById('shop-list');
+  list.innerHTML = '';
+  WEAPONS.filter(w => w.cat === currentShopCat).forEach(w => {
+    const isUnlocked = unlocked.includes(w.id);
+    const isEquipped = currentWeapon === w.id;
+    const canAfford = money >= w.cost;
+
+    const item = document.createElement('div');
+    item.className = 'shop-item' + (isUnlocked ? ' unlocked' : '');
+
+    let btnClass = 'buy-btn';
+    let btnText = `Kup $${w.cost.toLocaleString('pl-PL')}`;
+    if (isUnlocked) {
+      btnClass += isEquipped ? ' equipped' : ' select-mode';
+      btnText = isEquipped ? 'Wybrano' : 'Wybierz';
+    } else if (!canAfford) {
+      btnClass += ' locked-poor';
+    }
+
+    item.innerHTML = `
+      <div class="item-info">
+        <div class="item-icon">${w.icon}</div>
+        <div>
+          <div class="item-name">${w.name}</div>
+          <div class="item-desc">${w.desc}</div>
+          <div class="item-reward">Zarobek: +$${w.reward} / trafienie</div>
+        </div>
+      </div>
+      <button class="${btnClass}">${btnText}</button>
+    `;
+
+    item.querySelector('button').onclick = () => {
+      if (isUnlocked) {
+        currentWeapon = w.id;
+        renderBottomBar();
+        renderShopList();
+      } else if (money >= w.cost) {
+        money -= w.cost;
+        unlocked.push(w.id);
+        currentWeapon = w.id;
+        updateMoneyUI();
+        saveGame();
+        renderBottomBar();
+        renderShopList();
+      }
+    };
+
+    list.appendChild(item);
+  });
+}
+
+// --- FIZYKA RAGDOLLA (BUDDY) ---
+const gravity = 0.42;
+const friction = 0.985;
+const bounce = 0.55;
+
+let points = [];
+let sticks = [];
+let dummy = {};
+
+// Efekty i obiekty aktywne
+let particles = [];
+let floatingTexts = [];
+let tracers = [];
+let bees = [];
+let animals = [];
+let blackHoles = [];
+let lightnings = [];
+
+let screenShake = 0;
+let flashAlpha = 0;
+let hurtTimer = 0;
+let shockTimer = 0;
+let burnTimer = 0;
+let burnTick = 0;
+
+function getBoxBounds() {
+  return {
+    left: 16,
+    right: width - 16,
+    top: 66,
+    bottom: height - 74
+  };
+}
+
+class Point {
+  constructor(x, y, r, name = '') {
+    this.x = x;
+    this.y = y;
+    this.oldx = x;
+    this.oldy = y;
+    this.r = r;
+    this.name = name;
+  }
+}
+
+class Stick {
+  constructor(p0, p1, len, thickness, color, visible = true) {
+    this.p0 = p0;
+    this.p1 = p1;
+    this.len = len || Math.hypot(p1.x - p0.x, p1.y - p0.y);
+    this.thickness = thickness;
+    this.color = color;
+    this.visible = visible;
+  }
+}
+
+function initDummy() {
+  points = [];
+  sticks = [];
+  const cx = width * 0.5;
+  const cy = height * 0.42;
+
+  const head = new Point(cx, cy - 65, 28, 'head');
+  const neck = new Point(cx, cy - 32, 8, 'neck');
+  const chest = new Point(cx, cy - 5, 14, 'chest');
+  const pelvis = new Point(cx, cy + 28, 13, 'pelvis');
+
+  const lElbow = new Point(cx - 28, cy - 12, 8);
+  const lHand = new Point(cx - 48, cy + 10, 10);
+  const rElbow = new Point(cx + 28, cy - 12, 8);
+  const rHand = new Point(cx + 48, cy + 10, 10);
+
+  const lKnee = new Point(cx - 18, cy + 62, 9);
+  const lFoot = new Point(cx - 22, cy + 96, 11);
+  const rKnee = new Point(cx + 18, cy + 62, 9);
+  const rFoot = new Point(cx + 22, cy + 96, 11);
+
+  points.push(head, neck, chest, pelvis, lElbow, lHand, rElbow, rHand, lKnee, lFoot, rKnee, rFoot);
+
+  const burlap = '#d7a977';
+  const shirt = '#3973ac';
+  const pants = '#2c3e50';
+
+  sticks.push(
+    new Stick(head, neck, 33, 12, burlap),
+    new Stick(neck, chest, 27, 26, shirt),
+    new Stick(chest, pelvis, 33, 24, shirt),
+
+    new Stick(neck, lElbow, 32, 13, shirt),
+    new Stick(lElbow, lHand, 28, 11, burlap),
+    new Stick(neck, rElbow, 32, 13, shirt),
+    new Stick(rElbow, rHand, 28, 11, burlap),
+
+    new Stick(pelvis, lKnee, 38, 15, pants),
+    new Stick(lKnee, lFoot, 34, 13, burlap),
+    new Stick(pelvis, rKnee, 38, 15, pants),
+    new Stick(rKnee, rFoot, 34, 13, burlap),
+
+    // Więzy strukturalne utrzymujące kształt kukły
+    new Stick(head, chest, 60, 0, '', false),
+    new Stick(neck, pelvis, 60, 0, '', false),
+    new Stick(head, pelvis, 93, 0, '', false),
+    new Stick(lElbow, rElbow, 52, 0, '', false),
+    new Stick(lKnee, rKnee, 34, 0, '', false)
+  );
+
+  dummy = { head, neck, chest, pelvis, lHand, rHand, lFoot, rFoot };
+}
+
+function resetDummy() {
+  bees = [];
+  animals = [];
+  blackHoles = [];
+  burnTimer = 0;
+  shockTimer = 0;
+  initDummy();
+}
+
+// --- EFEKTY CZĄSTECZKOWE I OBRAŻENIA ---
+function spawnStuffing(x, y, count = 10, speed = 7) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = 1 + Math.random() * speed;
+    const type = Math.random();
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s,
+      vy: Math.sin(a) * s - 1.5,
+      size: 3 + Math.random() * 4,
+      color: type < 0.5 ? '#f5e6cc' : (type < 0.85 ? '#ffab00' : '#e53935'),
+      life: 1.0
+    });
+  }
+}
+
+function applyForceToDummy(originX, originY, forceX, forceY, radius = 150) {
+  points.forEach(p => {
+    const d = Math.hypot(p.x - originX, p.y - originY);
+    if (d < radius) {
+      const factor = 1 - (d / radius) * 0.5;
+      p.oldx -= forceX * factor;
+      p.oldy -= forceY * factor;
+    }
+  });
+}
+
+function hitDummy(reward, x, y, fx, fy, shake = 6) {
+  hurtTimer = 45;
+  screenShake = Math.max(screenShake, shake);
+  addMoney(reward, x, y);
+  spawnStuffing(x, y, 12, 8);
+  applyForceToDummy(x, y, fx, fy, 170);
+}
+
+// --- OBSŁUGA DOTYKU I BRONI ---
+let pointer = { x: 0, y: 0, prevX: 0, prevY: 0, down: false, grabbed: null };
+let holdTick = 0;
+let batSwing = null;
+let slamCooldown = 0;
+
+function getWeaponData(id) {
+  return WEAPONS.find(w => w.id === id);
+}
+
+function getPointerPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches && e.touches[0] ? e.touches[0] : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0] : e);
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top
+  };
+}
+
+function onPointerDown(e) {
+  if (e.target !== canvas) return;
+  e.preventDefault();
+  const pos = getPointerPos(e);
+  pointer.x = pointer.prevX = pos.x;
+  pointer.y = pointer.prevY = pos.y;
+  pointer.down = true;
+  holdTick = 0;
+
+  const w = getWeaponData(currentWeapon);
+  const cx = dummy.chest.x;
+  const cy = dummy.chest.y;
+
+  if (currentWeapon === 'hand') {
+    let closest = null;
+    let minD = 75;
+    points.forEach(p => {
+      const d = Math.hypot(p.x - pos.x, p.y - pos.y);
+      if (d < minD) { minD = d; closest = p; }
+    });
+    if (closest) {
+      pointer.grabbed = closest;
+      // Lekkie pacnięcie przy samym złapaniu
+      addMoney(1, closest.x, closest.y);
+      hurtTimer = 20;
+    }
+  } else if (currentWeapon === 'bat') {
+    batSwing = { x: pos.x, y: pos.y, timer: 12 };
+    const dist = Math.hypot(cx - pos.x, cy - pos.y);
+    if (dist < 140) {
+      const dir = pos.x < cx ? 1 : -1;
+      hitDummy(w.reward, dummy.head.x, dummy.head.y, dir * 18, -12, 9);
+    }
+  } else if (currentWeapon === 'pistol') {
+    fireGun(pos.x, pos.y, 1, 0.04, w.reward, 15, 7);
+  } else if (currentWeapon === 'shotgun') {
+    fireGun(pos.x, pos.y, 6, 0.25, w.reward, 24, 14);
+  } else if (currentWeapon === 'bees') {
+    spawnBees(pos.x, pos.y, w.reward);
+  } else if (currentWeapon === 'shark') {
+    spawnShark(w.reward);
+  } else if (currentWeapon === 'bull') {
+    spawnBull(w.reward);
+  } else if (currentWeapon === 'lightning') {
+    strikeLightning(w.reward);
+  } else if (currentWeapon === 'blackhole') {
+    spawnBlackHole(pos.x, pos.y, w.reward);
+  }
+}
+
+function onPointerMove(e) {
+  if (!pointer.down) return;
+  e.preventDefault();
+  const pos = getPointerPos(e);
+  pointer.prevX = pointer.x;
+  pointer.prevY = pointer.y;
+  pointer.x = pos.x;
+  pointer.y = pos.y;
+
+  if (currentWeapon === 'bat') {
+    const speed = Math.hypot(pointer.x - pointer.prevX, pointer.y - pointer.prevY);
+    if (speed > 14 && Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 90) {
+      const w = getWeaponData('bat');
+      const vx = (pointer.x - pointer.prevX) * 0.9;
+      const vy = (pointer.y - pointer.prevY) * 0.9;
+      hitDummy(w.reward, dummy.chest.x, dummy.chest.y, vx, vy, 8);
+    }
+  }
+}
+
+function onPointerUp() {
+  pointer.down = false;
+  pointer.grabbed = null;
+}
+
+canvas.addEventListener('mousedown', onPointerDown);
+window.addEventListener('mousemove', onPointerMove);
+window.addEventListener('mouseup', onPointerUp);
+
+canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+window.addEventListener('touchmove', onPointerMove, { passive: false });
+window.addEventListener('touchend', onPointerUp);
+
+// --- MECHANIKI POSZCZEGÓLNYCH BRONI ---
+function fireGun(tx, ty, pellets, spread, reward, knockback, shake) {
+  const startX = width * 0.5;
+  const startY = height - 65;
+  let hitAny = false;
+
+  for (let i = 0; i < pellets; i++) {
+    const offsetX = (Math.random() - 0.5) * spread * 250;
+    const offsetY = (Math.random() - 0.5) * spread * 250;
+    const px = tx + offsetX;
+    const py = ty + offsetY;
+    tracers.push({ x1: startX, y1: startY, x2: px, y2: py, life: 1.0, color: '#ffee58' });
+
+    points.forEach(p => {
+      if (Math.hypot(p.x - px, p.y - py) < p.r + 45) {
+        hitAny = true;
+      }
+    });
+  }
+
+  screenShake = Math.max(screenShake, shake);
+  if (hitAny || Math.hypot(dummy.chest.x - tx, dummy.chest.y - ty) < 110) {
+    const angle = Math.atan2(dummy.chest.y - startY, dummy.chest.x - startX);
+    hitDummy(
+      reward,
+      dummy.chest.x,
+      dummy.chest.y,
+      Math.cos(angle) * knockback + (Math.random() - 0.5) * 10,
+      Math.sin(angle) * knockback - 6,
+      shake
+    );
+  }
+}
+
+function spawnBees(x, y, reward) {
+  for (let i = 0; i < 10; i++) {
+    bees.push({
+      x: x + (Math.random() - 0.5) * 60,
+      y: y + (Math.random() - 0.5) * 60,
+      vx: 0,
+      vy: 0,
+      timer: 180 + Math.random() * 60,
+      reward: Math.ceil(reward / 4)
+    });
+  }
+}
+
+function spawnShark(reward) {
+  const fromLeft = Math.random() < 0.5;
+  animals.push({
+    type: 'shark',
+    icon: '🦈',
+    x: fromLeft ? -60 : width + 60,
+    y: dummy.chest.y + 20,
+    vx: fromLeft ? 19 : -19,
+    vy: -7,
+    dir: fromLeft ? 1 : -1,
+    reward,
+    hasHit: false
+  });
+}
+
+function spawnBull(reward) {
+  const bounds = getBoxBounds();
+  const fromLeft = Math.random() < 0.5;
+  animals.push({
+    type: 'bull',
+    icon: '🐂',
+    x: fromLeft ? -70 : width + 70,
+    y: bounds.bottom - 35,
+    vx: fromLeft ? 24 : -24,
+    vy: 0,
+    dir: fromLeft ? 1 : -1,
+    reward,
+    hasHit: false
+  });
+  screenShake = 10;
+}
+
+function strikeLightning(reward) {
+  const tx = dummy.head.x;
+  const ty = dummy.head.y;
+  const segments = [];
+  let curX = tx + (Math.random() - 0.5) * 80;
+  let curY = getBoxBounds().top;
+
+  while (curY < ty) {
+    const nextY = Math.min(ty, curY + 25 + Math.random() * 25);
+    const nextX = nextY === ty ? tx : curX + (Math.random() - 0.5) * 65;
+    segments.push({ x1: curX, y1: curY, x2: nextX, y2: nextY });
+    curX = nextX;
+    curY = nextY;
+  }
+
+  lightnings.push({ segments, life: 1.0 });
+  flashAlpha = 0.85;
+  shockTimer = 70;
+  hitDummy(reward, tx, ty, (Math.random() - 0.5) * 35, -22, 20);
+}
+
+function spawnBlackHole(x, y, reward) {
+  blackHoles.push({
+    x, y,
+    timer: 170,
+    angle: 0,
+    reward,
+    tick: 0
+  });
+}
+
+// --- PĘTLA AKTUALIZACJI (UPDATE) ---
+function update() {
+  const bounds = getBoxBounds();
+  if (slamCooldown > 0) slamCooldown--;
+  if (hurtTimer > 0) hurtTimer--;
+  if (shockTimer > 0) shockTimer--;
+  if (screenShake > 0) screenShake *= 0.88;
+  if (flashAlpha > 0) flashAlpha -= 0.06;
+  if (batSwing) {
+    batSwing.timer--;
+    if (batSwing.timer <= 0) batSwing = null;
+  }
+
+  // Bronie ciągłe przy przytrzymaniu palca (Piła, Laser, Miotacz ognia)
+  if (pointer.down) {
+    holdTick++;
+    if (currentWeapon === 'chainsaw') {
+      const d = Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y);
+      if (d < 85 && holdTick % 9 === 0) {
+        const w = getWeaponData('chainsaw');
+        hitDummy(w.reward, pointer.x, pointer.y, (Math.random() - 0.5) * 14, -7, 6);
+      }
+    } else if (currentWeapon === 'laser') {
+      if (holdTick % 7 === 0) {
+        const w = getWeaponData('laser');
+        const d = Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y);
+        if (d < 100) {
+          hitDummy(w.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -10, 9);
+        }
+      }
+    } else if (currentWeapon === 'flamethrower') {
+      for (let i = 0; i < 3; i++) {
+        const startX = width * 0.5;
+        const startY = height - 70;
+        const angle = Math.atan2(pointer.y - startY, pointer.x - startX) + (Math.random() - 0.5) * 0.3;
+        const spd = 10 + Math.random() * 7;
+        particles.push({
+          x: startX, y: startY,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          size: 7 + Math.random() * 8,
+          color: Math.random() < 0.5 ? '#ff6d00' : '#ffd600',
+          life: 0.75
+        });
+      }
+      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 110) {
+        burnTimer = 180;
+        if (holdTick % 12 === 0) {
+          const w = getWeaponData('flamethrower');
+          hitDummy(w.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 8, -5, 4);
+        }
+      }
+    }
+  }
+
+  // Efekt podpalenia kukły (DoT)
+  if (burnTimer > 0) {
+    burnTimer--;
+    burnTick++;
+    hurtTimer = 10;
+    points.forEach(p => {
+      if (Math.random() < 0.35) {
+        particles.push({
+          x: p.x + (Math.random() - 0.5) * 15,
+          y: p.y + (Math.random() - 0.5) * 15,
+          vx: (Math.random() - 0.5) * 2,
+          vy: -2 - Math.random() * 3,
+          size: 5 + Math.random() * 6,
+          color: Math.random() < 0.6 ? '#ff5722' : '#ffeb3b',
+          life: 0.6
+        });
+      }
+    });
+    if (burnTick % 25 === 0) {
+      addMoney(40, dummy.head.x, dummy.head.y);
+    }
+  }
+
+  // Aktualizacja Czarnej Dziury
+  for (let i = blackHoles.length - 1; i >= 0; i--) {
+    const bh = blackHoles[i];
+    bh.timer--;
+    bh.angle += 0.25;
+    bh.tick++;
+
+    points.forEach(p => {
+      const dx = bh.x - p.x;
+      const dy = bh.y - p.y;
+      const dist = Math.max(15, Math.hypot(dx, dy));
+      // Siła dośrodkowa + wirowanie
+      p.oldx -= (dx / dist) * 3.2 - (dy / dist) * 2.2;
+      p.oldy -= (dy / dist) * 3.2 + (dx / dist) * 2.2;
+    });
+
+    if (bh.tick % 18 === 0) {
+      hurtTimer = 30;
+      screenShake = 8;
+      addMoney(Math.round(bh.reward / 4), bh.x, bh.y);
+      spawnStuffing(bh.x, bh.y, 6, 9);
+    }
+
+    if (bh.timer <= 0) {
+      // Wielki wybuch na koniec czarnej dziury
+      hitDummy(bh.reward, bh.x, bh.y, (Math.random() - 0.5) * 45, -30, 22);
+      blackHoles.splice(i, 1);
+    }
+  }
+
+  // Aktualizacja roju szerszeni
+  for (let i = bees.length - 1; i >= 0; i--) {
+    const b = bees[i];
+    b.timer--;
+    const target = i % 2 === 0 ? dummy.head : dummy.chest;
+    const dx = target.x - b.x;
+    const dy = target.y - b.y;
+    b.vx = b.vx * 0.85 + dx * 0.05 + (Math.random() - 0.5) * 5;
+    b.vy = b.vy * 0.85 + dy * 0.05 + (Math.random() - 0.5) * 5;
+    b.x += b.vx;
+    b.y += b.vy;
+
+    if (Math.hypot(dx, dy) < 40 && Math.random() < 0.08) {
+      hitDummy(b.reward, target.x, target.y, (Math.random() - 0.5) * 10, -4, 3);
+    }
+    if (b.timer <= 0) bees.splice(i, 1);
+  }
+
+  // Aktualizacja zwierząt (Rekin / Byk)
+  for (let i = animals.length - 1; i >= 0; i--) {
+    const a = animals[i];
+    a.x += a.vx;
+    a.y += a.vy;
+    if (a.type === 'shark') a.vy += 0.25;
+
+    if (!a.hasHit && Math.hypot(a.x - dummy.chest.x, a.y - dummy.chest.y) < 85) {
+      a.hasHit = true;
+      hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 32, -18, 16);
+    }
+
+    if (a.x < -150 || a.x > width + 150) {
+      animals.splice(i, 1);
+    }
+  }
+
+  // Fizyka punktów Verlet
+  points.forEach(p => {
+    if (p === pointer.grabbed) {
+      const vx = (pointer.x - p.x) * 0.65;
+      const vy = (pointer.y - p.y) * 0.65;
+      p.x = pointer.x;
+      p.y = pointer.y;
+      p.oldx = p.x - vx;
+      p.oldy = p.y - vy;
+      return;
+    }
+
+    let vx = (p.x - p.oldx) * friction;
+    let vy = (p.y - p.oldy) * friction;
+
+    if (shockTimer > 0) {
+      vx += (Math.random() - 0.5) * 7;
+      vy += (Math.random() - 0.5) * 7;
+    }
+
+    p.oldx = p.x;
+    p.oldy = p.y;
+    p.x += vx;
+    p.y += vy + gravity;
+
+    // Detekcja mocnego uderzenia o ściany pudełka
+    const speed = Math.hypot(vx, vy);
+    let slammed = false;
+
+    if (p.x < bounds.left + p.r) {
+      p.x = bounds.left + p.r;
+      p.oldx = p.x + vx * bounce;
+      if (speed > 11) slammed = true;
+    } else if (p.x > bounds.right - p.r) {
+      p.x = bounds.right - p.r;
+      p.oldx = p.x + vx * bounce;
+      if (speed > 11) slammed = true;
+    }
+
+    if (p.y < bounds.top + p.r) {
+      p.y = bounds.top + p.r;
+      p.oldy = p.y + vy * bounce;
+      if (speed > 11) slammed = true;
+    } else if (p.y > bounds.bottom - p.r) {
+      p.y = bounds.bottom - p.r;
+      p.oldy = p.y + vy * bounce;
+      p.oldx += vx * 0.15;
+      if (speed > 12) slammed = true;
+    }
+
+    if (slammed && slamCooldown <= 0) {
+      slamCooldown = 10;
+      hurtTimer = 25;
+      screenShake = Math.max(screenShake, 5);
+      addMoney(getWeaponData('hand').reward, p.x, p.y);
+      spawnStuffing(p.x, p.y, 6, 5);
+    }
+  });
+
+  // Delikatna siła prostująca kukłę, gdy spoczywa na ziemi
+  if (!pointer.grabbed && blackHoles.length === 0) {
+    dummy.head.y -= 0.7;
+    dummy.pelvis.y += 0.4;
+  }
+
+  // Rozwiązywanie połączeń (kości)
+  for (let iter = 0; iter < 6; iter++) {
+    sticks.forEach(s => {
+      const dx = s.p1.x - s.p0.x;
+      const dy = s.p1.y - s.p0.y;
+      const dist = Math.hypot(dx, dy) || 0.001;
+      const diff = (s.len - dist) / dist * 0.5;
+      const ox = dx * diff;
+      const oy = dy * diff;
+
+      if (s.p0 !== pointer.grabbed) { s.p0.x -= ox; s.p0.y -= oy; }
+      if (s.p1 !== pointer.grabbed) { s.p1.x += ox; s.p1.y += oy; }
+    });
+  }
+
+  // Cząsteczki
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.x += pt.vx;
+    pt.y += pt.vy;
+    pt.vy += 0.18;
+    pt.life -= 0.025;
+    if (pt.y > bounds.bottom) {
+      pt.y = bounds.bottom;
+      pt.vy *= -0.3;
+      pt.vx *= 0.7;
+    }
+    if (pt.life <= 0) particles.splice(i, 1);
+  }
+
+  // Latające napisy +$
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.y += ft.vy;
+    ft.life -= 0.022;
+    if (ft.life <= 0) floatingTexts.splice(i, 1);
+  }
+
+  // Smugi po kulach
+  for (let i = tracers.length - 1; i >= 0; i--) {
+    tracers[i].life -= 0.15;
+    if (tracers[i].life <= 0) tracers.splice(i, 1);
+  }
+
+  // Błyskawice
+  for (let i = lightnings.length - 1; i >= 0; i--) {
+    lightnings[i].life -= 0.08;
+    if (lightnings[i].life <= 0) lightnings.splice(i, 1);
+  }
+}
+
+// --- RYSOWANIE (RENDER) ---
+function drawCardboardBox() {
+  const b = getBoxBounds();
+
+  // Wnętrze kartonowego pudełka
+  const grad = ctx.createRadialGradient(width * 0.5, height * 0.5, 40, width * 0.5, height * 0.5, Math.max(width, height) * 0.7);
+  grad.addColorStop(0, '#9c7a54');
+  grad.addColorStop(1, '#5d432c');
+  ctx.fillStyle = grad;
+  ctx.fillRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
+
+  // Linie perspektywy narożników pudełka
+  ctx.strokeStyle = 'rgba(40, 26, 14, 0.45)';
+  ctx.lineWidth = 3;
+  const padX = (b.right - b.left) * 0.12;
+  const padY = (b.bottom - b.top) * 0.12;
+  ctx.strokeRect(b.left + padX, b.top + padY, (b.right - b.left) - padX * 2, (b.bottom - b.top) - padY * 2);
+
+  ctx.beginPath();
+  ctx.moveTo(b.left, b.top); ctx.lineTo(b.left + padX, b.top + padY);
+  ctx.moveTo(b.right, b.top); ctx.lineTo(b.right - padX, b.top + padY);
+  ctx.moveTo(b.left, b.bottom); ctx.lineTo(b.left + padX, b.bottom - padY);
+  ctx.moveTo(b.right, b.bottom); ctx.lineTo(b.right - padX, b.bottom - padY);
+  ctx.stroke();
+
+  // Obramowanie pudełka
+  ctx.strokeStyle = '#3e2b1d';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
+}
+
+function drawDummy() {
+  // Kończyny i tułów
+  sticks.forEach(s => {
+    if (!s.visible) return;
+    ctx.strokeStyle = shockTimer > 0 && Math.random() < 0.5 ? '#80d8ff' : s.color;
+    ctx.lineWidth = s.thickness;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(s.p0.x, s.p0.y);
+    ctx.lineTo(s.p1.x, s.p1.y);
+    ctx.stroke();
+  });
+
+  // Dłonie i stopy
+  [dummy.lHand, dummy.rHand, dummy.lFoot, dummy.rFoot].forEach(p => {
+    ctx.fillStyle = '#d7a977';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#8d633a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Głowa Buddy'ego
+  const h = dummy.head;
+  const angle = Math.atan2(h.y - dummy.neck.y, h.x - dummy.neck.x) + Math.PI * 0.5;
+
+  ctx.save();
+  ctx.translate(h.x, h.y);
+  ctx.rotate(angle);
+
+  ctx.fillStyle = shockTimer > 0 && Math.random() < 0.5 ? '#b3e5fc' : '#e0b382';
+  ctx.beginPath();
+  ctx.arc(0, 0, h.r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#8d633a';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Szew na czole (styl szmacianej kukły)
+  ctx.strokeStyle = '#6d4c2f';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-12, -16);
+  ctx.lineTo(6, -12);
+  ctx.stroke();
+
+  // Oczy i mimika
+  ctx.fillStyle = '#1f1916';
+  ctx.strokeStyle = '#1f1916';
+  ctx.lineWidth = 2.5;
+
+  if (hurtTimer > 0 || shockTimer > 0) {
+    // Oczy X_X podczas otrzymywania obrażeń
+    const drawX = (ox, oy) => {
+      ctx.beginPath();
+      ctx.moveTo(ox - 5, oy - 5); ctx.lineTo(ox + 5, oy + 5);
+      ctx.moveTo(ox + 5, oy - 5); ctx.lineTo(ox - 5, oy + 5);
+      ctx.stroke();
+    };
+    drawX(-9, -3);
+    drawX(9, -3);
+
+    // Otwarte, krzyczące usta
+    ctx.fillStyle = '#4a1212';
+    ctx.beginPath();
+    ctx.arc(0, 11, 7, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Guzikowe oczy i uśmiech
+    ctx.beginPath();
+    ctx.arc(-9, -3, 4.5, 0, Math.PI * 2);
+    ctx.arc(9, -3, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(0, 6, 10, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawEffects() {
+  // Czarne dziury
+  blackHoles.forEach(bh => {
+    ctx.save();
+    ctx.translate(bh.x, bh.y);
+    ctx.rotate(bh.angle);
+    const grad = ctx.createRadialGradient(0, 0, 5, 0, 0, 65);
+    grad.addColorStop(0, '#000');
+    grad.addColorStop(0.5, '#4a148c');
+    grad.addColorStop(1, 'rgba(123, 31, 162, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 65, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#ea80fc';
+    ctx.lineWidth = 3;
+    for (let arm = 0; arm < 3; arm++) {
+      ctx.rotate((Math.PI * 2) / 3);
+      ctx.beginPath();
+      ctx.arc(15, 0, 24, 0, Math.PI);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
+
+  // Wiązka lasera
+  if (pointer.down && currentWeapon === 'laser') {
+    const sx = width * 0.5;
+    const sy = height - 65;
+    ctx.strokeStyle = 'rgba(255, 23, 68, 0.45)';
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
+
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
+  }
+
+  // Piła łańcuchowa pod palcem
+  if (pointer.down && currentWeapon === 'chainsaw') {
+    ctx.font = '38px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const jx = (Math.random() - 0.5) * 6;
+    const jy = (Math.random() - 0.5) * 6;
+    ctx.fillText('🪚', pointer.x + jx, pointer.y + jy);
+  }
+
+  // Animacja uderzenia kijem
+  if (batSwing) {
+    ctx.font = '44px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🏏', batSwing.x, batSwing.y);
+  }
+
+  // Smugi pocisków
+  tracers.forEach(t => {
+    ctx.strokeStyle = `rgba(255, 238, 88, ${t.life})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(t.x1, t.y1);
+    ctx.lineTo(t.x2, t.y2);
+    ctx.stroke();
+  });
+
+  // Pioruny
+  lightnings.forEach(l => {
+    ctx.strokeStyle = `rgba(128, 216, 255, ${l.life})`;
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    l.segments.forEach(s => { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); });
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(255, 255, 255, ${l.life})`;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  });
+
+  // Szerszenie
+  ctx.font = '22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  bees.forEach(b => {
+    ctx.fillText('🐝', b.x, b.y);
+  });
+
+  // Zwierzęta (Rekin, Byk)
+  ctx.font = '64px sans-serif';
+  animals.forEach(a => {
+    ctx.save();
+    ctx.translate(a.x, a.y);
+    if (a.dir > 0) ctx.scale(-1, 1);
+    ctx.fillText(a.icon, 0, 0);
+    ctx.restore();
+  });
+
+  // Cząsteczki
+  particles.forEach(pt => {
+    ctx.globalAlpha = Math.max(0, pt.life);
+    ctx.fillStyle = pt.color;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1.0;
+
+  // Latające napisy kasy (+$)
+  floatingTexts.forEach(ft => {
+    ctx.globalAlpha = Math.max(0, ft.life);
+    ctx.font = `900 ${Math.round(20 * ft.scale)}px 'Segoe UI', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 4;
+    ctx.strokeText(ft.text, ft.x, ft.y);
+    ctx.fillStyle = '#69f0ae';
+    ctx.fillText(ft.text, ft.x, ft.y);
+  });
+  ctx.globalAlpha = 1.0;
+
+  // Błysk ekranu przy piorunie
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+    ctx.fillRect(0, 0, width, height);
+  }
+}
+
+function loop() {
+  update();
+
+  ctx.save();
+  if (screenShake > 0.5) {
+    const sx = (Math.random() - 0.5) * screenShake;
+    const sy = (Math.random() - 0.5) * screenShake;
+    ctx.translate(sx, sy);
+  }
+
+  ctx.clearRect(-20, -20, width + 40, height + 40);
+  drawCardboardBox();
+  drawDummy();
+  drawEffects();
+
+  ctx.restore();
+  requestAnimationFrame(loop);
+}
+
+// Inicjalizacja gry
+initDummy();
+loadSave();
+loop();
+</script>
+</body>
+</html>
