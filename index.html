@@ -2,66 +2,80 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kick the Dummy 2D - Ultimate Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Kick the Dummy 2D - Overkill</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-  html, body { width: 100%; height: 100%; background: #050505; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; position: fixed; }
-  #app-root { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; }
-  canvas { display: block; width: 100%; height: 100%; background: #050505; touch-action: none; }
-  #top-bar { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; gap: 6px; z-index: 30; pointer-events: none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; background: #070709; color: #f8fafc; font-family: 'Trebuchet MS', 'Segoe UI', Roboto, system-ui, sans-serif; overflow: hidden; }
+  #app-root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #070709; }
+  body.force-landscape #app-root { position: fixed; width: 100vh; height: 100vw; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  /* Nowoczesny HUD */
+  #top-bar { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; z-index: 30; pointer-events: none; }
   .hud-left, .hud-right { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
-  .money-box { background: linear-gradient(135deg, #064e3b, #059669); border: 1.5px solid #34d399; padding: 5px 12px; border-radius: 10px; font-size: 16px; font-weight: 900; color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.7); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-  .mult-badge { background: linear-gradient(135deg, #4c1d95, #7c3aed); border: 1.5px solid #c4b5fd; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; }
-  #quest-box { pointer-events: auto; background: rgba(15, 13, 12, 0.94); border: 1.5px solid #d97706; border-radius: 10px; padding: 4px 10px; max-width: 320px; flex: 1; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 3px 10px rgba(0,0,0,0.6); }
-  .quest-top { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; color: #fde68a; }
-  .quest-bar-bg { width: 100%; height: 5px; background: #1c1917; border-radius: 3px; overflow: hidden; }
-  .quest-bar-fill { height: 100%; background: linear-gradient(90deg, #d97706, #fef08a); width: 0%; transition: width 0.15s; }
-  .ui-btn { background: linear-gradient(135deg, #262220, #171412); border: 1.5px solid #44403c; color: #f5f5f4; padding: 6px 10px; border-radius: 9px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.6); white-space: nowrap; }
+  .money-box { background: linear-gradient(135deg, rgba(6, 78, 59, 0.92), rgba(16, 185, 129, 0.88)); border: 1.5px solid #6ee7b7; padding: 6px 13px; border-radius: 12px; font-size: 17px; font-weight: 900; letter-spacing: 0.4px; font-variant-numeric: tabular-nums; color: #fff; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 6px; white-space: nowrap; backdrop-filter: blur(6px); }
+  .stat-pill { background: rgba(15, 23, 42, 0.85); border: 1.5px solid #475569; padding: 5px 9px; border-radius: 10px; font-size: 11px; font-weight: 900; font-variant-numeric: tabular-nums; color: #e2e8f0; white-space: nowrap; backdrop-filter: blur(6px); }
+  .mult-pill { background: linear-gradient(135deg, rgba(88, 28, 135, 0.9), rgba(147, 51, 234, 0.85)); border-color: #d8b4fe; color: #fff; }
+
+  /* Centrum: Misja + Pasek Szału Overdrive */
+  .hud-center { flex: 1; max-width: 340px; display: flex; flex-direction: column; gap: 4px; pointer-events: auto; }
+  #quest-box { background: rgba(15, 18, 28, 0.88); border: 1.5px solid rgba(245, 158, 11, 0.85); border-radius: 10px; padding: 4px 10px; display: flex; flex-direction: column; gap: 3px; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+  .quest-top { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: #fde68a; letter-spacing: 0.2px; }
+  .bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.12); border-radius: 4px; overflow: hidden; }
+  #quest-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fef08a); width: 0%; transition: width 0.15s; }
+  #fever-wrap { display: flex; align-items: center; gap: 5px; background: rgba(15, 18, 28, 0.82); border: 1px solid rgba(244, 63, 94, 0.6); border-radius: 8px; padding: 2px 7px; }
+  #fever-lbl { font-size: 9px; font-weight: 900; color: #fda4af; letter-spacing: 0.6px; white-space: nowrap; }
+  #fever-fill { height: 100%; background: linear-gradient(90deg, #e11d48, #fb7185, #facc15); width: 0%; transition: width 0.1s; }
+
+  .ui-btn { background: rgba(24, 28, 40, 0.92); border: 1.5px solid #475569; color: #f8fafc; padding: 7px 11px; border-radius: 10px; font-size: 12px; font-weight: 900; letter-spacing: 0.4px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.5); white-space: nowrap; transition: transform 0.08s; }
   .ui-btn:active { transform: scale(0.92); }
-  .btn-shop { background: linear-gradient(135deg, #9a3412, #ea580c); border-color: #fdba74; color: #fff; }
-  .btn-upgrade-hud { background: linear-gradient(135deg, #1e40af, #2563eb); border-color: #93c5fd; color: #fff; }
-  #combo-box { position: absolute; top: 58px; left: 12px; z-index: 25; pointer-events: none; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.9); display: none; }
-  .combo-num { font-size: 24px; color: #facc15; }
-  .combo-sub { font-size: 10px; color: #fb923c; }
-  #event-banner { position: absolute; top: 55px; right: 12px; z-index: 25; pointer-events: none; background: linear-gradient(135deg, #b45309, #f59e0b); color: #fff; font-weight: 900; font-size: 12px; padding: 5px 10px; border-radius: 8px; box-shadow: 0 0 14px rgba(245, 158, 11, 0.8); display: none; }
-  
-  /* Dolny pasek z odblokowanym dotykiem i płynnym przewijaniem w poziomie */
+  .btn-shop { background: linear-gradient(135deg, #c2410c, #f97316); border-color: #fdba74; color: #fff; box-shadow: 0 3px 12px rgba(249, 115, 22, 0.4); }
+  .btn-upgrade-hud { background: linear-gradient(135deg, #1d4ed8, #3b82f6); border-color: #93c5fd; color: #fff; font-variant-numeric: tabular-nums; }
+
+  #combo-box { position: absolute; top: 68px; left: 14px; z-index: 25; pointer-events: none; font-weight: 900; text-shadow: 0 3px 10px rgba(0,0,0,0.9); transition: transform 0.08s; display: none; }
+  .combo-num { font-size: 26px; color: #facc15; letter-spacing: 0.5px; }
+  .combo-sub { font-size: 11px; color: #fb923c; }
+  #event-banner { position: absolute; top: 68px; right: 14px; z-index: 25; pointer-events: none; background: linear-gradient(135deg, #d97706, #facc15); color: #09090b; font-weight: 900; font-size: 12px; padding: 6px 12px; border-radius: 10px; box-shadow: 0 0 18px rgba(250, 204, 21, 0.8); display: none; }
+
+  /* Dolny pasek z płynnym przewijaniem */
   #bottom-bar-wrap { position: absolute; bottom: 8px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; z-index: 35; pointer-events: none; }
-  #bottom-bar { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 4px; pointer-events: auto; touch-action: pan-x; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  #bottom-bar { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; pointer-events: auto; touch-action: pan-x; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   #bottom-bar::-webkit-scrollbar { display: none; }
-  .weapon-slot { flex: 0 0 auto; background: rgba(20, 18, 16, 0.95); border: 1.5px solid #44403c; border-radius: 9px; padding: 6px 11px; color: #e7e5e4; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
-  .weapon-slot.active { background: linear-gradient(135deg, #991b1b, #dc2626); border-color: #fca5a5; box-shadow: 0 0 10px rgba(220, 38, 38, 0.7); }
-  .weapon-slot .lv-tag { background: rgba(0,0,0,0.5); padding: 2px 4px; border-radius: 5px; font-size: 9px; color: #fde047; }
+  .weapon-slot { flex: 0 0 auto; background: rgba(15, 20, 32, 0.92); border: 1.5px solid #334155; border-radius: 10px; padding: 6px 11px; color: #e2e8f0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; cursor: pointer; touch-action: pan-x; backdrop-filter: blur(4px); }
+  .weapon-slot.active { background: linear-gradient(135deg, #991b1b, #ef4444); border-color: #fca5a5; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.65); }
+  .weapon-slot .lv-tag { background: rgba(0,0,0,0.45); padding: 2px 5px; border-radius: 6px; font-size: 10px; color: #fde047; }
   #quick-upgrade-btn { pointer-events: auto; }
 
-  .modal-overlay { position: absolute; inset: 0; background: rgba(5, 5, 5, 0.94); backdrop-filter: blur(6px); z-index: 60; display: none; flex-direction: column; padding: 12px 16px; }
+  /* Okna Sklepu i Ustawień */
+  .modal-overlay { position: absolute; inset: 0; background: rgba(7, 9, 15, 0.94); backdrop-filter: blur(8px); z-index: 60; display: none; flex-direction: column; padding: 12px 16px; }
   .modal-overlay.open { display: flex; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1.5px solid #292524; }
-  .modal-title { font-size: 18px; font-weight: 900; color: #fde047; }
-  .shop-tabs { display: flex; gap: 6px; margin: 8px 0; overflow-x: auto; padding-bottom: 2px; }
-  .tab-btn { flex: 1; white-space: nowrap; background: #1c1917; border: 1px solid #44403c; color: #d6d3d1; padding: 7px 10px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer; }
-  .tab-btn.active { background: #ea580c; color: #fff; border-color: #fed7aa; }
-  .shop-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; padding-right: 4px; align-content: start; }
-  .shop-item { background: #171412; border: 1.5px solid #292524; border-radius: 11px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1.5px solid #1e293b; }
+  .modal-title { font-size: 18px; font-weight: 900; color: #fde047; letter-spacing: 0.6px; }
+  .shop-tabs { display: flex; gap: 6px; margin: 8px 0; overflow-x: auto; padding-bottom: 4px; touch-action: pan-x; scrollbar-width: none; }
+  .shop-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex: 0 0 auto; white-space: nowrap; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 7px 11px; border-radius: 9px; font-weight: 800; font-size: 11.5px; cursor: pointer; }
+  .tab-btn.active { background: linear-gradient(135deg, #ea580c, #f97316); color: #fff; border-color: #fed7aa; }
+  .shop-list { flex: 1; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; padding-right: 4px; align-content: start; }
+  .shop-item { background: #111827; border: 1.5px solid #1f2937; border-radius: 12px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .shop-item.unlocked { border-color: #16a34a; }
   .item-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
-  .item-icon { font-size: 26px; width: 42px; height: 42px; flex-shrink: 0; background: #0c0a09; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-  .item-name { font-size: 13px; font-weight: 800; color: #fff; }
-  .item-desc { font-size: 11px; color: #a8a29e; }
-  .item-reward { font-size: 11px; color: #4ade80; font-weight: 700; }
+  .item-icon { font-size: 25px; width: 42px; height: 42px; flex-shrink: 0; background: #090d16; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .item-name { font-size: 12.5px; font-weight: 900; color: #fff; }
+  .item-desc { font-size: 10.5px; color: #94a3b8; }
+  .item-reward { font-size: 10.5px; color: #4ade80; font-weight: 800; font-variant-numeric: tabular-nums; }
   .item-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-  .buy-btn { background: linear-gradient(135deg, #16a34a, #22c55e); border: 1px solid #86efac; color: #fff; padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; min-width: 88px; text-align: center; cursor: pointer; }
-  .buy-btn.locked-poor { background: #262220; border-color: #44403c; color: #78716c; }
-  .buy-btn.select-mode { background: linear-gradient(135deg, #2563eb, #3b82f6); border-color: #93c5fd; }
+  .buy-btn { background: linear-gradient(135deg, #15803d, #22c55e); border: 1px solid #86efac; color: #fff; padding: 6px 9px; border-radius: 8px; font-weight: 800; font-size: 10.5px; min-width: 86px; text-align: center; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .buy-btn.locked-poor { background: #1e293b; border-color: #334155; color: #64748b; }
+  .buy-btn.select-mode { background: linear-gradient(135deg, #1d4ed8, #3b82f6); border-color: #93c5fd; }
   .buy-btn.equipped { background: #dc2626; border-color: #fca5a5; }
-  .buy-btn.upg-btn { background: linear-gradient(135deg, #7c3aed, #9333ea); border-color: #c4b5fd; }
-  .settings-body { max-width: 420px; margin: 16px auto; width: 100%; display: flex; flex-direction: column; gap: 12px; }
-  .setting-row { background: #171412; border: 1px solid #292524; padding: 12px 14px; border-radius: 11px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; }
-  .toggle-btn { padding: 7px 16px; border-radius: 8px; font-weight: 900; border: none; cursor: pointer; }
+  .buy-btn.upg-btn { background: linear-gradient(135deg, #7e22ce, #a855f7); border-color: #d8b4fe; }
+  .settings-body { max-width: 440px; margin: 12px auto; width: 100%; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; touch-action: pan-y; }
+  .setting-row { background: #111827; border: 1px solid #1f2937; padding: 11px 14px; border-radius: 11px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; }
+  .toggle-btn { padding: 6px 15px; border-radius: 8px; font-weight: 900; border: none; cursor: pointer; }
   .toggle-on { background: #16a34a; color: #fff; }
-  .toggle-off { background: #44403c; color: #d6d3d1; }
-  select.toggle-btn { background: #262220; color: #fff; border: 1px solid #57534e; }
+  .toggle-off { background: #334155; color: #cbd5e1; }
+  select.toggle-btn { background: #1e293b; color: #fff; border: 1px solid #475569; }
 </style>
 </head>
 <body>
@@ -69,11 +83,18 @@
   <div id="top-bar">
     <div class="hud-left">
       <div class="money-box"><span>💵</span><span id="money-display">$0</span></div>
-      <div class="mult-badge" id="mult-display">⚡ x1.0</div>
+      <div class="stat-pill mult-pill" id="mult-display">⚡ x1.0</div>
+      <div class="stat-pill" id="dps-display">🤖 $0/s</div>
     </div>
-    <div id="quest-box">
-      <div class="quest-top"><span id="quest-text">🎯 Misja</span><span id="quest-reward">+$50</span></div>
-      <div class="quest-bar-bg"><div class="quest-bar-fill" id="quest-fill"></div></div>
+    <div class="hud-center">
+      <div id="quest-box">
+        <div class="quest-top"><span id="quest-text">🎯 Misja</span><span id="quest-reward">+$30</span></div>
+        <div class="bar-bg"><div id="quest-fill"></div></div>
+      </div>
+      <div id="fever-wrap">
+        <span id="fever-lbl">🔥 OVERDRIVE</span>
+        <div class="bar-bg"><div id="fever-fill"></div></div>
+      </div>
     </div>
     <div class="hud-right">
       <button class="ui-btn btn-shop" id="ui-shop">🛒 SKLEP</button>
@@ -97,12 +118,13 @@
       </div>
     </div>
     <div class="shop-tabs">
-      <button class="tab-btn active" id="tab-m" onclick="switchCategory('melee', this)">🏏 Biała</button>
-      <button class="tab-btn" id="tab-g" onclick="switchCategory('guns', this)">🔫 Palna</button>
-      <button class="tab-btn" id="tab-a" onclick="switchCategory('animals', this)">🦖 Zwierzęta</button>
-      <button class="tab-btn" id="tab-e" onclick="switchCategory('elements', this)">☢️ Żywioły</button>
-      <button class="tab-btn" id="tab-s" onclick="switchCategory('mythic', this)">⚡ Mityczne</button>
-      <button class="tab-btn" id="tab-sk" onclick="switchCategory('skins', this)">🎭 Skórki</button>
+      <button class="tab-btn active" id="tab-m" onclick="switchCategory('melee', this)">🏏 Biała (11)</button>
+      <button class="tab-btn" id="tab-g" onclick="switchCategory('guns', this)">🔫 Palna (11)</button>
+      <button class="tab-btn" id="tab-a" onclick="switchCategory('animals', this)">🦖 Zwierzęta (11)</button>
+      <button class="tab-btn" id="tab-e" onclick="switchCategory('elements', this)">☢️ Żywioły (11)</button>
+      <button class="tab-btn" id="tab-s" onclick="switchCategory('mythic', this)">⚡ Mityczne (11)</button>
+      <button class="tab-btn" id="tab-t" onclick="switchCategory('turrets', this)">🤖 Wieżyczki (5)</button>
+      <button class="tab-btn" id="tab-sk" onclick="switchCategory('skins', this)">🎭 Skórki (14)</button>
       <button class="tab-btn" id="tab-pr" onclick="switchCategory('prestige', this)">🌟 Prestige</button>
     </div>
     <div class="shop-list" id="shop-list"></div>
@@ -113,125 +135,134 @@
       <button class="ui-btn" id="set-close-btn">✖</button>
     </div>
     <div class="settings-body">
-      <div class="setting-row"><span id="set-lang-lbl">🌐 Język / Language</span>
+      <div class="setting-row"><span>🌐 Język / Language</span>
         <select id="lang-select" class="toggle-btn" onchange="changeLang(this.value)">
           <option value="pl">Polski (PL)</option>
           <option value="en">English (EN)</option>
           <option value="ru">Русский (RU)</option>
         </select>
       </div>
-      <div class="setting-row"><span id="set-snd-lbl">🔊 Dźwięk</span><button id="btn-sound" class="toggle-btn toggle-on" onclick="toggleSetting('sound')">ON</button></div>
-      <div class="setting-row"><span id="set-vib-lbl">📳 Wibracje</span><button id="btn-vib" class="toggle-btn toggle-on" onclick="toggleSetting('vibration')">ON</button></div>
-      <div class="setting-row" style="border-color:#dc2626;"><span id="set-res-lbl">🗑️ Reset Postępu</span><button class="ui-btn" style="background:#dc2626;border-color:#fca5a5;" onclick="hardReset()">Reset</button></div>
+      <div class="setting-row"><span>🔊 Dźwięk / Sound</span><button id="btn-sound" class="toggle-btn toggle-on" onclick="toggleSetting('sound')">ON</button></div>
+      <div class="setting-row"><span>📳 Wibracje / Vibrate</span><button id="btn-vib" class="toggle-btn toggle-on" onclick="toggleSetting('vibration')">ON</button></div>
+      <div class="setting-row"><span>🩸 Ślady walki / Marks</span><button id="btn-blood" class="toggle-btn toggle-on" onclick="toggleSetting('blood')">ON</button></div>
+      <div class="setting-row"><span>🔄 Wymuś obrót 90°</span><button id="btn-rot" class="toggle-btn toggle-off" onclick="toggleForceLandscape()">OFF</button></div>
+      <div class="setting-row" style="border-color:#dc2626;"><span>🗑️ Reset Postępu</span><button class="ui-btn" style="background:#dc2626;border-color:#fca5a5;" onclick="hardReset()">Reset</button></div>
     </div>
   </div>
 </div>
 <script>
 const LANG = {
-  pl: { shop: "🛒 SKLEP", quest: "🎯 Misja:", prestigeBtn: "ODRODZENIE (PRESTIGE)", skinsTab: "Skórki", prestigeTab: "Prestige", meleeTab: "Biała", gunsTab: "Palna", animalsTab: "Zwierzęta", elementsTab: "Żywioły", mythicTab: "Mityczne", buy: "Kup", eq: "Założono", use: "Załóż", sel: "Wybrano", choose: "Wybierz", active: "Aktywna", settings: "⚙️ USTAWIENIA" },
-  en: { shop: "🛒 SHOP", quest: "🎯 Quest:", prestigeBtn: "REBIRTH (PRESTIGE)", skinsTab: "Skins", prestigeTab: "Prestige", meleeTab: "Melee", gunsTab: "Guns", animalsTab: "Animals", elementsTab: "Elements", mythicTab: "Mythic", buy: "Buy", eq: "Equipped", use: "Equip", sel: "Selected", choose: "Select", active: "Active", settings: "⚙️ SETTINGS" },
-  ru: { shop: "🛒 МАГАЗИН", quest: "🎯 Миссия:", prestigeBtn: "ВОЗРОЖДЕНИЕ (ПРЕСТИЖ)", skinsTab: "Скины", prestigeTab: "Престиж", meleeTab: "Ближний", gunsTab: "Оружие", animalsTab: "Звери", elementsTab: "Стихии", mythicTab: "Мифика", buy: "Купить", eq: "Надето", use: "Надеть", sel: "Выбрано", choose: "Выбрать", active: "Активна", settings: "⚙️ НАСТРОЙКИ" }
+  pl: { shop: "🛒 SKLEP", quest: "🎯 Misja:", qHits: "Traf kukłę", qCombo: "Wbij Combo", qUpg: "Ulepsz broń", qWall: "Rzuć o ścianę", prestigeBtn: "ODRODZENIE (PRESTIGE)", skinsTab: "Skórki", prestigeTab: "Prestige", meleeTab: "Biała", gunsTab: "Palna", animalsTab: "Zwierzęta", elementsTab: "Żywioły", mythicTab: "Mityczne", turretsTab: "Wieżyczki", buy: "Kup", eq: "Założono", use: "Załóż", sel: "Wybrano", choose: "Wybierz", active: "Aktywna", settings: "⚙️ USTAWIENIA" },
+  en: { shop: "🛒 SHOP", quest: "🎯 Quest:", qHits: "Hit dummy", qCombo: "Reach Combo", qUpg: "Upgrade weapon", qWall: "Wall slam", prestigeBtn: "REBIRTH (PRESTIGE)", skinsTab: "Skins", prestigeTab: "Prestige", meleeTab: "Melee", gunsTab: "Guns", animalsTab: "Animals", elementsTab: "Elements", mythicTab: "Mythic", turretsTab: "Turrets", buy: "Buy", eq: "Equipped", use: "Equip", sel: "Selected", choose: "Select", active: "Active", settings: "⚙️ SETTINGS" },
+  ru: { shop: "🛒 МАГАЗИН", quest: "🎯 Миссия:", qHits: "Ударь куклу", qCombo: "Набей Комбо", qUpg: "Улучши оружие", qWall: "Удар о стену", prestigeBtn: "ВОЗРОЖДЕНИЕ", skinsTab: "Скины", prestigeTab: "Престиж", meleeTab: "Ближний", gunsTab: "Оружие", animalsTab: "Звери", elementsTab: "Стихии", mythicTab: "Мифика", turretsTab: "Турели", buy: "Купить", eq: "Надето", use: "Надеть", sel: "Выбрано", choose: "Выбрать", active: "Активна", settings: "⚙️ НАСТРОЙКИ" }
 };
 let currentLang = 'pl';
-function t(key) { return LANG[currentLang][key] || key; }
-function changeLang(l) { currentLang = l; saveGame(); updateLangUI(); renderShopList(); }
-function updateLangUI() {
-  document.getElementById('ui-shop').textContent = t('shop');
-  document.getElementById('shop-title-text').textContent = t('shop');
-  document.getElementById('set-title-text').textContent = t('settings');
-  document.getElementById('tab-sk').textContent = `🎭 ${t('skinsTab')} (12)`;
-  document.getElementById('tab-pr').textContent = `🌟 ${t('prestigeTab')}`;
-  document.getElementById('tab-m').textContent = `🏏 ${t('meleeTab')} (10)`;
-  document.getElementById('tab-g').textContent = `🔫 ${t('gunsTab')} (10)`;
-  document.getElementById('tab-a').textContent = `🦖 ${t('animalsTab')} (10)`;
-  document.getElementById('tab-e').textContent = `☢️ ${t('elementsTab')} (10)`;
-  document.getElementById('tab-s').textContent = `⚡ ${t('mythicTab')} (10)`;
-}
+function tr(key) { return (LANG[currentLang] && LANG[currentLang][key]) || key; }
 
-// 50 BRONI
 const WEAPONS = [
-  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, upgBase: 15, reward: 2, vib: [25], desc: 'Łap i ciskaj' },
-  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 35, upgBase: 50, reward: 6, vib: [45], desc: 'Ciosy z odrzutem' },
-  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 220, upgBase: 280, reward: 15, vib: [30, 15, 30], desc: 'Ciągłe cięcie' },
-  { id: 'anvil', cat: 'melee', name: 'Kowadło 100T', icon: '⚓', cost: 1300, upgBase: 1500, reward: 95, vib: [120, 30, 50], desc: 'Żelazny blok' },
-  { id: 'hammer', cat: 'melee', name: 'Młot Thora', icon: '🔨', cost: 7500, upgBase: 9000, reward: 380, vib: [110, 25, 140], desc: 'Młot z wyładowaniem' },
-  { id: 'katana', cat: 'melee', name: 'Katana Mroku', icon: '🗡️', cost: 38000, upgBase: 45000, reward: 1500, vib: [60, 20, 60], desc: 'Szybkie cięcie' },
-  { id: 'mace', cat: 'melee', name: 'Kolczasta Buława', icon: '🛡️', cost: 180000, upgBase: 210000, reward: 6200, vib: [130, 30, 90], desc: 'Miażdżący cios' },
-  { id: 'spear', cat: 'melee', name: 'Włócznia Spartan', icon: '🔱', cost: 850000, upgBase: 980000, reward: 28000, vib: [80, 25, 80], desc: 'Przebija manekin' },
-  { id: 'excalibur', cat: 'melee', name: 'Miecz Excalibur', icon: '⚔️', cost: 4000000, upgBase: 4600000, reward: 125000, vib: [150, 40, 180], desc: 'Królewski miecz' },
-  { id: 'reaper', cat: 'melee', name: 'Kosa Śmierci', icon: '🏴‍☠️', cost: 18000000, upgBase: 21000000, reward: 550000, vib: [180, 50, 220], desc: 'Kosiarka dusz' },
-  
-  { id: 'pistol', cat: 'guns', name: 'Pistolet 9mm', icon: '🔫', cost: 75000000, upgBase: 85000000, reward: 2400000, vib: [45], desc: 'Szybkie pestki' },
-  { id: 'shotgun', cat: 'guns', name: 'Strzelba', icon: '💥', cost: 320000000, upgBase: 360000000, reward: 9800000, vib: [95, 25, 50], desc: 'Potężny śrut' },
-  { id: 'laser', cat: 'guns', name: 'Minigun Laserowy', icon: '☄️', cost: 1400000000, upgBase: 1600000000, reward: 39000000, vib: [25, 15, 25], desc: 'Plazma' },
-  { id: 'rpg', cat: 'guns', name: 'Wyrzutnia RPG', icon: '🚀', cost: 6000000000, upgBase: 6800000000, reward: 160000000, vib: [160, 40, 220, 40, 100], desc: 'Rakieta burząca' },
-  { id: 'sniper', cat: 'guns', name: 'Snajperka', icon: '🎯', cost: 26000000000, upgBase: 30000000000, reward: 720000000, vib: [140, 30, 80], desc: 'Precyzyjny strzał' },
-  { id: 'flak', cat: 'guns', name: 'Działo Flak', icon: '💣', cost: 110000000000, upgBase: 130000000000, reward: 3100000000, vib: [180, 50, 180], desc: 'Odłamki' },
-  { id: 'plasma', cat: 'guns', name: 'Karabin Plazmowy', icon: '🔮', cost: 480000000000, upgBase: 550000000000, reward: 14000000000, vib: [90, 30, 90], desc: 'Energia obcych' },
-  { id: 'gatling', cat: 'guns', name: 'Ciężki Gatling', icon: '🌀', cost: 2100000000000, upgBase: 2400000000000, reward: 62000000000, vib: [20, 15, 20], desc: 'Ogień ciągły' },
-  { id: 'orbital', cat: 'guns', name: 'Działo Orbitalne', icon: '🛰️', cost: 9000000000000, upgBase: 10000000000000, reward: 280000000000, vib: [120, 30, 260, 50, 150], desc: 'Promień z kosmosu' },
-  { id: 'deathray', cat: 'guns', name: 'Promień Zagłady', icon: '🔦', cost: 38000000000000, upgBase: 44000000000000, reward: 1200000000000, vib: [200, 60, 250], desc: 'Spala w popiół' },
+  // Biała (11)
+  { id: 'hand', cat: 'melee', act: 'hand', name: 'Ręka', icon: '✋', cost: 0, upgBase: 18, reward: 2, vib: [25], desc: 'Łap i ciskaj kukłą o ściany' },
+  { id: 'bat', cat: 'melee', act: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 40, upgBase: 55, reward: 6, vib: [45], desc: 'Mocne uderzenie z odrzutem' },
+  { id: 'crowbar', cat: 'melee', act: 'melee', name: 'Stalowy Łom', icon: '🔧', cost: 180, upgBase: 220, reward: 18, vib: [55], desc: 'Ciężkie metalowe ciosy' },
+  { id: 'chainsaw', cat: 'melee', act: 'hold_saw', name: 'Piła Łańcuchowa', icon: '🪚', cost: 750, upgBase: 900, reward: 22, vib: [30, 15, 30], desc: 'Przytrzymaj na kukle' },
+  { id: 'anvil', cat: 'melee', act: 'anvil', name: 'Kowadło 100T', icon: '⚓', cost: 3400, upgBase: 4000, reward: 190, vib: [130, 30, 60], desc: 'Zrzuca ciężkie żelazo z góry' },
+  { id: 'hammer', cat: 'melee', act: 'melee_shock', name: 'Młot Thora', icon: '🔨', cost: 16000, upgBase: 19000, reward: 780, vib: [110, 25, 140], desc: 'Cios młotem z piorunem' },
+  { id: 'katana', cat: 'melee', act: 'melee', name: 'Katana Mroku', icon: '🗡️', cost: 78000, upgBase: 90000, reward: 3200, vib: [60, 20, 60], desc: 'Błyskawiczne cięcie' },
+  { id: 'mace', cat: 'melee', act: 'melee', name: 'Kolczasta Buława', icon: '🛡️', cost: 360000, upgBase: 420000, reward: 13500, vib: [130, 30, 90], desc: 'Miażdżący obuch' },
+  { id: 'spear', cat: 'melee', act: 'melee', name: 'Włócznia Spartan', icon: '🔱', cost: 1700000, upgBase: 2000000, reward: 58000, vib: [85, 25, 85], desc: 'Przebija na wylot' },
+  { id: 'excalibur', cat: 'melee', act: 'melee_shock', name: 'Miecz Excalibur', icon: '⚔️', cost: 8200000, upgBase: 9500000, reward: 260000, vib: [150, 40, 180], desc: 'Legendarne ostrze' },
+  { id: 'reaper', cat: 'melee', act: 'melee_shock', name: 'Kosa Śmierci', icon: '☠️', cost: 40000000, upgBase: 46000000, reward: 1200000, vib: [180, 50, 220], desc: 'Żniwa na arenie' },
 
-  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 150000000000000, upgBase: 170000000000000, reward: 5000000000000, vib: [25, 20, 25], desc: 'Żądlący rój' },
-  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 650000000000000, upgBase: 750000000000000, reward: 21000000000000, vib: [110, 30, 120], desc: 'Szczęki potwora' },
-  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 2800000000000000, upgBase: 3200000000000000, reward: 90000000000000, vib: [140, 35, 160], desc: 'Szarża byka' },
-  { id: 'dragon', cat: 'animals', name: 'Smok Wawelski', icon: '🐉', cost: 12000000000000000, upgBase: 14000000000000000, reward: 390000000000000, vib: [130, 30, 180, 30, 90], desc: 'Zieje ogniem' },
-  { id: 'trex', cat: 'animals', name: 'Król T-Rex', icon: '🦖', cost: 50000000000000000, upgBase: 58000000000000000, reward: 1700000000000000, vib: [180, 40, 240, 40, 140], desc: 'Tupnięcie dino' },
-  { id: 'kraken', cat: 'animals', name: 'Morski Kraken', icon: '🦑', cost: 220000000000000000, upgBase: 250000000000000000, reward: 7500000000000000, vib: [160, 40, 190], desc: 'Mecze macek' },
-  { id: 'griffin', cat: 'animals', name: 'Boski Gryf', icon: '🦅', cost: 950000000000000000, upgBase: 1100000000000000000, reward: 33000000000000000, vib: [130, 30, 150], desc: 'Szpony ptaka' },
-  { id: 'cerberus', cat: 'animals', name: 'Piekielny Cerber', icon: '🐕', cost: 4200000000000000000, upgBase: 4800000000000000000, reward: 150000000000000000, vib: [170, 45, 170], desc: 'Trzy głowy ognia' },
-  { id: 'hydra', cat: 'animals', name: 'Hydra', icon: '🐍', cost: 18000000000000000000, upgBase: 21000000000000000000, reward: 680000000000000000, vib: [190, 50, 210], desc: 'Wielogłowy potwór' },
-  { id: 'behemoth', cat: 'animals', name: 'Behemoth', icon: '🦖', cost: 80000000000000000000, upgBase: 92000000000000000000, reward: 3100000000000000000, vib: [220, 60, 260], desc: 'Bestia wymiaru' },
+  // Palna (11)
+  { id: 'pistol', cat: 'guns', act: 'gun', name: 'Pistolet 9mm', icon: '🔫', cost: 180000000, upgBase: 210000000, reward: 5200000, vib: [45], desc: 'Celny ostrzał' },
+  { id: 'uzi', cat: 'guns', act: 'hold_laser', name: 'Podwójne UZI', icon: '⚡', cost: 820000000, upgBase: 950000000, reward: 8500000, vib: [22, 14, 22], desc: 'Przytrzymaj dla serii' },
+  { id: 'shotgun', cat: 'guns', act: 'shotgun', name: 'Strzelba Kal.12', icon: '💥', cost: 3800000000, upgBase: 4400000000, reward: 95000000, vib: [100, 25, 60], desc: 'Chmura śrutu' },
+  { id: 'sniper', cat: 'guns', act: 'gun', name: 'Barrett .50', icon: '🎯', cost: 18000000000, upgBase: 21000000000, reward: 430000000, vib: [150, 30, 80], desc: 'Strzał o ogromnej sile' },
+  { id: 'laser', cat: 'guns', act: 'hold_laser', name: 'Minigun Laser', icon: '☄️', cost: 85000000000, upgBase: 98000000000, reward: 720000000, vib: [28, 15, 28], desc: 'Ciągła wiązka plazmy' },
+  { id: 'rpg', cat: 'guns', act: 'rocket', name: 'Wyrzutnia RPG', icon: '🚀', cost: 400000000000, upgBase: 460000000000, reward: 9800000000, vib: [170, 40, 230, 40, 100], desc: 'Eksplodująca rakieta' },
+  { id: 'flak', cat: 'guns', act: 'shotgun', name: 'Działo Flak', icon: '💣', cost: 1900000000000, upgBase: 2200000000000, reward: 46000000000, vib: [180, 50, 180], desc: 'Rozpryskowe odłamki' },
+  { id: 'plasma', cat: 'guns', act: 'gun', name: 'Karabin Plazmy', icon: '🔮', cost: 9000000000000, upgBase: 10500000000000, reward: 220000000000, vib: [100, 30, 110], desc: 'Kule obcej energii' },
+  { id: 'gatling', cat: 'guns', act: 'hold_laser', name: 'Ciężki Gatling', icon: '⚙️', cost: 44000000000000, upgBase: 51000000000000, reward: 420000000000, vib: [25, 12, 25], desc: 'Deszcz ołowiu' },
+  { id: 'orbital', cat: 'guns', act: 'beam', name: 'Działo Orbitalne', icon: '🛰️', cost: 210000000000000, upgBase: 245000000000000, reward: 5200000000000, vib: [130, 30, 260, 50, 150], desc: 'Promień z orbity' },
+  { id: 'deathray', cat: 'guns', act: 'beam', name: 'Promień Zagłady', icon: '🔦', cost: 1e15, upgBase: 1.2e15, reward: 2.6e13, vib: [210, 60, 260], desc: 'Spala wszystko na popiół' },
 
-  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 350000000000000000000, upgBase: 400000000000000000000, reward: 14000000000000000000, vib: [40, 20, 40], desc: 'Żywy ogień' },
-  { id: 'freeze', cat: 'elements', name: 'Mroźna Zamieć', icon: '❄️', cost: 1500000000000000000000, upgBase: 1800000000000000000000, reward: 65000000000000000000, vib: [90, 25, 90], desc: 'Zamraża manekin' },
-  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 7000000000000000000000, upgBase: 8200000000000000000000, reward: 300000000000000000000, vib: [100, 20, 180, 20, 80], desc: 'Błyskawica z nieba' },
-  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 32000000000000000000000, upgBase: 38000000000000000000000, reward: 1400000000000000000000, vib: [60, 40, 80], desc: 'Wciąga w wir' },
-  { id: 'nuke', cat: 'elements', name: 'Bomba Atomowa', icon: '☢️', cost: 150000000000000000000000, upgBase: 180000000000000000000000, reward: 6800000000000000000000, vib: [220, 50, 320, 60, 200, 40, 120], desc: 'Zagłada nuklearna' },
-  { id: 'tsunami', cat: 'elements', name: 'Fala Tsunami', icon: '🌊', cost: 700000000000000000000000, upgBase: 820000000000000000000000, reward: 32000000000000000000000, vib: [150, 40, 150], desc: 'Potężny potop' },
-  { id: 'magma', cat: 'elements', name: 'Erupcja Magmy', icon: '🌋', cost: 3300000000000000000000000, upgBase: 3900000000000000000000000, reward: 150000000000000000000000, vib: [180, 40, 190], desc: 'Wrząca lawa' },
-  { id: 'supernova', cat: 'elements', name: 'Supernova', icon: '☀️', cost: 15000000000000000000000000, upgBase: 18000000000000000000000000, reward: 720000000000000000000000, vib: [250, 60, 300], desc: 'Wybuch gwiazdy' },
-  { id: 'antimatter', cat: 'elements', name: 'Działo Anty-Materii', icon: '⚛️', cost: 70000000000000000000000000, upgBase: 82000000000000000000000000, reward: 3500000000000000000000000, vib: [280, 70, 350], desc: 'Rozrywa cząstki' },
-  { id: 'singularity', cat: 'elements', name: 'Singularność', icon: '🌌', cost: 320000000000000000000000000, upgBase: 380000000000000000000000000, reward: 17000000000000000000000000, vib: [300, 80, 400], desc: 'Koniec przestrzeni' },
+  // Zwierzęta (11)
+  { id: 'bees', cat: 'animals', act: 'bees', name: 'Rój Szerszeni', icon: '🐝', cost: 4.8e15, upgBase: 5.5e15, reward: 3.5e13, vib: [25, 20, 25], desc: '1 zbalansowany rój (5x/s)' },
+  { id: 'piranha', cat: 'animals', act: 'animal', name: 'Piranie', icon: '🐟', cost: 2.3e16, upgBase: 2.7e16, reward: 5.8e14, vib: [80, 25, 80], desc: 'Zwinny atak z boku' },
+  { id: 'shark', cat: 'animals', act: 'animal', name: 'Rekin Ludojad', icon: '🦈', cost: 1.1e17, upgBase: 1.3e17, reward: 2.8e15, vib: [120, 30, 130], desc: 'Potężne szczęki' },
+  { id: 'bull', cat: 'animals', act: 'animal', name: 'Szalony Byk', icon: '🐂', cost: 5.5e17, upgBase: 6.4e17, reward: 1.4e16, vib: [145, 35, 165], desc: 'Szarża przez arenę' },
+  { id: 'rhino', cat: 'animals', act: 'animal', name: 'Pancerny Nosorożec', icon: '🦏', cost: 2.7e18, upgBase: 3.1e18, reward: 7e16, vib: [170, 40, 190], desc: 'Żywy taran' },
+  { id: 'dragon', cat: 'animals', act: 'dragon', name: 'Smok Wawelski', icon: '🐉', cost: 1.3e19, upgBase: 1.5e19, reward: 3.4e17, vib: [130, 30, 180, 30, 90], desc: 'Zieje ogniem z powietrza' },
+  { id: 'trex', cat: 'animals', act: 'animal', name: 'Król T-Rex', icon: '🦖', cost: 6.5e19, upgBase: 7.6e19, reward: 1.7e18, vib: [190, 40, 240, 40, 140], desc: 'Tupnięcie trzęsące ekranem' },
+  { id: 'kraken', cat: 'animals', act: 'animal', name: 'Morski Kraken', icon: '🦑', cost: 3.2e20, upgBase: 3.7e20, reward: 8.5e18, vib: [160, 40, 190], desc: 'Macki z głębin' },
+  { id: 'griffin', cat: 'animals', act: 'dragon', name: 'Boski Gryf', icon: '🦅', cost: 1.6e21, upgBase: 1.9e21, reward: 4.3e19, vib: [130, 30, 150], desc: 'Szarża z niebios' },
+  { id: 'cerberus', cat: 'animals', act: 'animal', name: 'Piekielny Cerber', icon: '🐕', cost: 8e21, upgBase: 9.2e21, reward: 2.2e20, vib: [180, 45, 180], desc: 'Trzy głowy ognia' },
+  { id: 'behemoth', cat: 'animals', act: 'animal', name: 'Kosmiczny Behemoth', icon: '👾', cost: 4e22, upgBase: 4.6e22, reward: 1.1e21, vib: [230, 60, 270], desc: 'Bestia wymiarów' },
 
-  { id: 'mjolnir', cat: 'mythic', name: 'Młot Przeznaczenia', icon: '🔨', cost: 1500000000000000000000000000, upgBase: 1800000000000000000000000000, reward: 85000000000000000000000000, vib: [180, 40, 220], desc: 'Młot bogów' },
-  { id: 'zeusbolt', cat: 'mythic', name: 'Gniew Zeusa', icon: '⚡', cost: 7500000000000000000000000000, upgBase: 9000000000000000000000000000, reward: 420000000000000000000000000, vib: [200, 50, 250], desc: 'Boskie pioruny' },
-  { id: 'poseidon', cat: 'mythic', name: 'Trójząb', icon: '🔱', cost: 36000000000000000000000000000, upgBase: 44000000000000000000000000000, reward: 2100000000000000000000000000, vib: [160, 40, 180], desc: 'Władca oceanów' },
-  { id: 'hades', cat: 'mythic', name: 'Bramy Hadesu', icon: '🔥', cost: 180000000000000000000000000000, upgBase: 220000000000000000000000000000, reward: 11000000000000000000000000000, vib: [220, 60, 260], desc: 'Ogień podziemi' },
-  { id: 'kronos', cat: 'mythic', name: 'Klinga Kronosa', icon: '⏳', cost: 900000000000000000000000000000, upgBase: 1100000000000000000000000000000, reward: 58000000000000000000000000000, vib: [240, 70, 300], desc: 'Zatrzymuje czas' },
-  { id: 'infinity', cat: 'mythic', name: 'Rękawica Nieskończoności', icon: '🧤', cost: 4500000000000000000000000000000, upgBase: 5500000000000000000000000000000, reward: 310000000000000000000000000000, vib: [300, 100, 350], desc: 'Jedno pstryknięcie' },
-  { id: 'cosmos', cat: 'mythic', name: 'Serce Kosmosu', icon: '💎', cost: 23000000000000000000000000000000, upgBase: 28000000000000000000000000000000, reward: 1700000000000000000000000000000, vib: [260, 80, 320], desc: 'Energia wszechświata' },
-  { id: 'dimension', cat: 'mythic', name: 'Przełamywacz Wymiarów', icon: '🚪', cost: 120000000000000000000000000000000, upgBase: 150000000000000000000000000000000, reward: 9500000000000000000000000000000, vib: [320, 90, 380], desc: 'Portale do niczego' },
-  { id: 'godhand', cat: 'mythic', name: 'Ręka Stwórcy', icon: '✨', cost: 650000000000000000000000000000000, upgBase: 800000000000000000000000000000000, reward: 55000000000000000000000000000000, vib: [350, 100, 420], desc: 'Boska moc kreacji' },
-  { id: 'omnitool', cat: 'mythic', name: 'Ostateczny Omnitool', icon: '👑', cost: 3500000000000000000000000000000000, upgBase: 4500000000000000000000000000000000, reward: 320000000000000000000000000000000, vib: [400, 120, 500], desc: 'Absolutna dominacja' }
+  // Żywioły (11)
+  { id: 'flamethrower', cat: 'elements', act: 'hold_flame', name: 'Miotacz Ognia', icon: '🔥', cost: 2e23, upgBase: 2.3e23, reward: 1.6e21, vib: [40, 20, 40], desc: 'Podpala kukłę' },
+  { id: 'acid', cat: 'elements', act: 'hold_flame', name: 'Miotacz Kwasu', icon: '🧪', cost: 1e24, upgBase: 1.2e24, reward: 8.5e21, vib: [45, 20, 45], desc: 'Żrący strumień' },
+  { id: 'freeze', cat: 'elements', act: 'freeze', name: 'Mroźna Zamieć', icon: '❄️', cost: 5e24, upgBase: 5.8e24, reward: 1.5e23, vib: [95, 25, 95], desc: 'Zamraża (rozbicie x2.5!)' },
+  { id: 'tornado', cat: 'elements', act: 'blackhole', name: 'Super Tornado', icon: '🌪️', cost: 2.5e25, upgBase: 2.9e25, reward: 7.5e23, vib: [55, 35, 70], desc: 'Wir powietrzny' },
+  { id: 'lightning', cat: 'elements', act: 'lightning', name: 'Piorun Zeusa', icon: '⚡', cost: 1.3e26, upgBase: 1.5e26, reward: 3.9e24, vib: [100, 20, 180, 20, 80], desc: 'Potężna błyskawica' },
+  { id: 'tsunami', cat: 'elements', act: 'nuke', name: 'Fala Tsunami', icon: '🌊', cost: 6.5e26, upgBase: 7.5e26, reward: 2e25, vib: [150, 40, 160], desc: 'Ściana wody' },
+  { id: 'magma', cat: 'elements', act: 'nuke', name: 'Erupcja Magmy', icon: '🌋', cost: 3.3e27, upgBase: 3.8e27, reward: 1e26, vib: [185, 45, 200], desc: 'Eksplozja lawy' },
+  { id: 'blackhole', cat: 'elements', act: 'blackhole', name: 'Czarna Dziura', icon: '🌀', cost: 1.7e28, upgBase: 2e28, reward: 5.2e26, vib: [65, 40, 85], desc: 'Wciąga w wir i wybucha' },
+  { id: 'nuke', cat: 'elements', act: 'nuke', name: 'Bomba Atomowa', icon: '☢️', cost: 8.5e28, upgBase: 1e29, reward: 2.7e27, vib: [220, 50, 320, 60, 200], desc: 'Eksplozja nuklearna' },
+  { id: 'supernova', cat: 'elements', act: 'nuke', name: 'Supernova', icon: '☀️', cost: 4.3e29, upgBase: 5e29, reward: 1.4e28, vib: [250, 60, 320], desc: 'Wybuch gwiazdy' },
+  { id: 'singularity', cat: 'elements', act: 'blackhole', name: 'Singularność', icon: '🌌', cost: 2.2e30, upgBase: 2.6e30, reward: 7.5e28, vib: [290, 80, 380], desc: 'Koniec czasoprzestrzeni' },
+
+  // Mityczne (11)
+  { id: 'mjolnir', cat: 'mythic', act: 'melee_shock', name: 'Młot Przeznaczenia', icon: '🔨', cost: 1.1e31, upgBase: 1.3e31, reward: 3.8e29, vib: [180, 40, 220], desc: 'Boski młot' },
+  { id: 'zeusbolt', cat: 'mythic', act: 'lightning', name: 'Gniew Zeusa', icon: '🌩️', cost: 5.8e31, upgBase: 6.7e31, reward: 2e30, vib: [200, 50, 250], desc: 'Seria piorunów' },
+  { id: 'poseidon', cat: 'mythic', act: 'beam', name: 'Trójząb Posejdona', icon: '🔱', cost: 3e32, upgBase: 3.5e32, reward: 1.1e31, vib: [170, 40, 190], desc: 'Furia oceanów' },
+  { id: 'hades', cat: 'mythic', act: 'nuke', name: 'Bramy Hadesu', icon: '👹', cost: 1.6e33, upgBase: 1.9e33, reward: 6e31, vib: [220, 60, 260], desc: 'Piekielny wybuch' },
+  { id: 'kronos', cat: 'mythic', act: 'freeze', name: 'Klinga Kronosa', icon: '⏳', cost: 8.5e33, upgBase: 1e34, reward: 3.2e32, vib: [240, 70, 300], desc: 'Zamraża czas' },
+  { id: 'phoenix', cat: 'mythic', act: 'dragon', name: 'Ognisty Feniks', icon: '🔥', cost: 4.5e34, upgBase: 5.2e34, reward: 1.8e33, vib: [230, 50, 260], desc: 'Przelot nieśmiertelnego' },
+  { id: 'infinity', cat: 'mythic', act: 'nuke', name: 'Rękawica Mocy', icon: '🧤', cost: 2.4e35, upgBase: 2.8e35, reward: 9.8e33, vib: [300, 90, 350], desc: 'Jedno pstryknięcie' },
+  { id: 'cosmos', cat: 'mythic', act: 'beam', name: 'Serce Kosmosu', icon: '💎', cost: 1.3e36, upgBase: 1.5e36, reward: 5.5e34, vib: [260, 80, 320], desc: 'Energia galaktyki' },
+  { id: 'dimension', cat: 'mythic', act: 'blackhole', name: 'Rozrywacz Wymiarów', icon: '🚪', cost: 7e36, upgBase: 8.2e36, reward: 3e35, vib: [320, 90, 380], desc: 'Portal chaosu' },
+  { id: 'godhand', cat: 'mythic', act: 'beam', name: 'Ręka Stwórcy', icon: '✨', cost: 3.8e37, upgBase: 4.5e37, reward: 1.7e36, vib: [350, 100, 420], desc: 'Boska wiązka' },
+  { id: 'omnitool', cat: 'mythic', act: 'nuke', name: 'Ostateczny Omnitool', icon: '👑', cost: 2.2e38, upgBase: 2.6e38, reward: 1e37, vib: [400, 120, 500], desc: 'Absolutna dominacja' }
 ];
 
-// 12 SKÓREK Z BALANSEM OD +0% DO +100% (x2.0)
+const TURRETS = [
+  { id: 't_drone', name: 'Mini-Dron', icon: '🚁', cost: 500, baseDps: 25, rate: 70, color: '#38bdf8', desc: 'Strzela sam co 1.2s' },
+  { id: 't_gatling', name: 'Wieżyczka Auto', icon: '🔫', cost: 250000, baseDps: 8500, rate: 42, color: '#facc15', desc: 'Szybki ogień automatyczny' },
+  { id: 't_laser', name: 'Dron Laserowy', icon: '🛸', cost: 1.5e8, baseDps: 4500000, rate: 30, color: '#f43f5e', desc: 'Czerwony laser co 0.5s' },
+  { id: 't_plasma', name: 'Satelita Plazmy', icon: '🛰️', cost: 2e12, baseDps: 5e10, rate: 22, color: '#a855f7', desc: 'Ciężkie impulsy plazmy' },
+  { id: 't_quantum', name: 'Rdzeń Kwantowy', icon: '⚛️', cost: 1e18, baseDps: 3e16, rate: 15, color: '#4ade80', desc: 'Niszczycielski ostrzał ciągły' }
+];
+
 const SKINS = [
-  { id: 'classic', name: 'Klasyczny Buddy', icon: '🧸', cost: 0, mult: 1.0, headCol: '#d9a773', shirtCol: '#2563eb', pantsCol: '#1e293b', desc: '+0% do kasy' },
-  { id: 'ninja', name: 'Cień Ninja', icon: '🥷', cost: 80000, mult: 1.05, headCol: '#334155', shirtCol: '#0f172a', pantsCol: '#020617', desc: '+5% do kasy' },
-  { id: 'zombie', name: 'Zombie', icon: '🧟', cost: 1500000, mult: 1.12, headCol: '#65a30d', shirtCol: '#451a03', pantsCol: '#1c1917', desc: '+12% do kasy' },
-  { id: 'knight', name: 'Rycerz', icon: '🛡️', cost: 25000000, mult: 1.20, headCol: '#94a3b8', shirtCol: '#64748b', pantsCol: '#334155', desc: '+20% do kasy' },
-  { id: 'robot', name: 'Cyber-Bot', icon: '🤖', cost: 400000000, mult: 1.30, headCol: '#64748b', shirtCol: '#0891b2', pantsCol: '#1e293b', desc: '+30% do kasy' },
-  { id: 'demon', name: 'Władca Piekieł', icon: '😈', cost: 7500000000, mult: 1.42, headCol: '#dc2626', shirtCol: '#450a0a', pantsCol: '#18181b', desc: '+42% do kasy' },
-  { id: 'samurai', name: 'Samuraj', icon: '⛩️', cost: 130000000000, mult: 1.55, headCol: '#b91c1c', shirtCol: '#172554', pantsCol: '#0f172a', desc: '+55% do kasy' },
-  { id: 'vampire', name: 'Wampir', icon: '🧛', cost: 2200000000000, mult: 1.68, headCol: '#e2e8f0', shirtCol: '#581c87', pantsCol: '#09090b', desc: '+68% do kasy' },
-  { id: 'gold', name: 'Złoty VIP', icon: '👑', cost: 38000000000000, mult: 1.80, headCol: '#facc15', shirtCol: '#ca8a04', pantsCol: '#854d0e', desc: '+80% do kasy' },
-  { id: 'phantom', name: 'Widmo', icon: '👻', cost: 650000000000000, mult: 1.90, headCol: '#93c5fd', shirtCol: '#1e3a8a', pantsCol: '#0f172a', desc: '+90% do kasy' },
-  { id: 'cosmic', name: 'Kosmiczny Byt', icon: '👽', cost: 11000000000000000, mult: 1.96, headCol: '#a855f7', shirtCol: '#581c87', pantsCol: '#1e1b4b', desc: '+96% do kasy' },
-  { id: 'god', name: 'Awatar Boga', icon: '✨', cost: 180000000000000000, mult: 2.0, headCol: '#fde047', shirtCol: '#eab308', pantsCol: '#713f12', desc: 'Max +100% (x2.0)' }
+  { id: 'classic', name: 'Klasyczny Buddy', icon: '🧸', cost: 0, mult: 1.00, headCol: '#d9a773', shirtCol: '#2563eb', pantsCol: '#1e293b', desc: '+0% do kasy' },
+  { id: 'boxer', name: 'Bokser', icon: '🥊', cost: 1200, mult: 1.04, headCol: '#e0ac69', shirtCol: '#dc2626', pantsCol: '#991b1b', desc: '+4% do kasy' },
+  { id: 'ninja', name: 'Cień Ninja', icon: '🥷', cost: 25000, mult: 1.09, headCol: '#334155', shirtCol: '#0f172a', pantsCol: '#020617', desc: '+9% do kasy' },
+  { id: 'soldier', name: 'Komandos', icon: '🪖', cost: 450000, mult: 1.15, headCol: '#d9a773', shirtCol: '#3f6212', pantsCol: '#365314', desc: '+15% do kasy' },
+  { id: 'zombie', name: 'Zombie', icon: '🧟', cost: 8000000, mult: 1.22, headCol: '#65a30d', shirtCol: '#451a03', pantsCol: '#1c1917', desc: '+22% do kasy' },
+  { id: 'knight', name: 'Stalowy Rycerz', icon: '🛡️', cost: 1.5e8, mult: 1.30, headCol: '#94a3b8', shirtCol: '#64748b', pantsCol: '#334155', desc: '+30% do kasy' },
+  { id: 'robot', name: 'Cyber-Bot X', icon: '🤖', cost: 3e9, mult: 1.39, headCol: '#64748b', shirtCol: '#0891b2', pantsCol: '#1e293b', desc: '+39% do kasy' },
+  { id: 'demon', name: 'Władca Piekieł', icon: '😈', cost: 7e10, mult: 1.48, headCol: '#dc2626', shirtCol: '#450a0a', pantsCol: '#18181b', desc: '+48% do kasy' },
+  { id: 'samurai', name: 'Ronin Samuraj', icon: '⛩️', cost: 1.8e12, mult: 1.58, headCol: '#b91c1c', shirtCol: '#172554', pantsCol: '#0f172a', desc: '+58% do kasy' },
+  { id: 'vampire', name: 'Mroczny Wampir', icon: '🧛', cost: 5e13, mult: 1.68, headCol: '#e2e8f0', shirtCol: '#581c87', pantsCol: '#09090b', desc: '+68% do kasy' },
+  { id: 'gold', name: 'Złoty VIP', icon: '👑', cost: 1.5e15, mult: 1.78, headCol: '#facc15', shirtCol: '#ca8a04', pantsCol: '#854d0e', desc: '+78% do kasy' },
+  { id: 'phantom', name: 'Widmo', icon: '👻', cost: 5e16, mult: 1.86, headCol: '#93c5fd', shirtCol: '#1e3a8a', pantsCol: '#0f172a', desc: '+86% do kasy' },
+  { id: 'cosmic', name: 'Kosmiczny Byt', icon: '👽', cost: 2e18, mult: 1.94, headCol: '#a855f7', shirtCol: '#581c87', pantsCol: '#1e1b4b', desc: '+94% do kasy' },
+  { id: 'god', name: 'Awatar Boga', icon: '✨', cost: 1e20, mult: 2.00, headCol: '#fde047', shirtCol: '#eab308', pantsCol: '#713f12', desc: 'Max +100% (x2.0)' }
 ];
 
 const THEMES = [
-  { id: 'box', name: 'Karton', reqPrestige: 0, c1: '#8c6a46', c2: '#4a331d', border: '#362312', line: 'rgba(30,18,8,0.45)' },
-  { id: 'lab', name: 'Lab', reqPrestige: 1, c1: '#0f293a', c2: '#07131c', border: '#06b6d4', line: 'rgba(6,182,212,0.22)' },
-  { id: 'vault', name: 'Sejf', reqPrestige: 2, c1: '#715310', c2: '#2e2105', border: '#facc15', line: 'rgba(250,204,21,0.25)' },
-  { id: 'volcano', name: 'Wulkan', reqPrestige: 3, c1: '#451208', c2: '#1a0502', border: '#ef4444', line: 'rgba(239,68,68,0.28)' },
-  { id: 'space', name: 'Kosmos', reqPrestige: 4, c1: '#1e1035', c2: '#070210', border: '#c084fc', line: 'rgba(192,132,252,0.25)' }
+  { id: 'box', name: 'Kartonowe Pudełko', reqPrestige: 0, c1: '#856442', c2: '#3f2b18', border: '#2e1d0f', line: 'rgba(25,15,6,0.45)' },
+  { id: 'lab', name: 'Laboratorium Sci-Fi', reqPrestige: 1, c1: '#0f293a', c2: '#06111a', border: '#06b6d4', line: 'rgba(6,182,212,0.22)' },
+  { id: 'vault', name: 'Złoty Sejf', reqPrestige: 2, c1: '#6e5010', c2: '#291d04', border: '#facc15', line: 'rgba(250,204,21,0.25)' },
+  { id: 'volcano', name: 'Wulkaniczna Kuźnia', reqPrestige: 3, c1: '#4a1208', c2: '#1a0402', border: '#ef4444', line: 'rgba(239,68,68,0.28)' },
+  { id: 'space', name: 'Kosmiczna Pustka', reqPrestige: 4, c1: '#1e1035', c2: '#060210', border: '#c084fc', line: 'rgba(192,132,252,0.25)' },
+  { id: 'matrix', name: 'Cyber Matrix', reqPrestige: 5, c1: '#06321d', c2: '#02120a', border: '#22c55e', line: 'rgba(34,197,94,0.25)' }
 ];
 function fmt(n) {
+  if (!isFinite(n) || isNaN(n)) return '0';
   if (n < 1000) return Math.floor(n).toString();
-  const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+  const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd'];
   const tier = Math.floor(Math.log10(Math.abs(n)) / 3);
   if (tier === 0) return Math.floor(n).toString();
   const suffix = suffixes[tier] || `e${tier * 3}`;
@@ -239,7 +270,7 @@ function fmt(n) {
   return scaled.toFixed(scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2)) + suffix;
 }
 
-let settings = { sound: true, vibration: true, forceLandscape: true };
+let settings = { sound: true, vibration: true, blood: true, forceLandscape: false };
 let audioCtx = null;
 function initAudio() {
   if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
@@ -254,40 +285,40 @@ function playSound(type) {
     if (type === 'hit' || type === 'bat') {
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
       osc.type = type === 'bat' ? 'triangle' : 'sine';
-      osc.frequency.setValueAtTime(type === 'bat' ? 190 : 130, now);
-      osc.frequency.exponentialRampToValueAtTime(36, now + 0.12);
-      gain.gain.setValueAtTime(0.35, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.12);
+      osc.frequency.setValueAtTime(type === 'bat' ? 195 : 135, now);
+      osc.frequency.exponentialRampToValueAtTime(36, now + 0.11);
+      gain.gain.setValueAtTime(0.32, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.11);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.11);
     } else if (type === 'saw') {
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
       osc.type = 'sawtooth'; osc.frequency.setValueAtTime(95 + Math.random() * 35, now);
-      gain.gain.setValueAtTime(0.18, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      gain.gain.setValueAtTime(0.16, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
       osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.08);
     } else if (type === 'gun' || type === 'explosion' || type === 'nuke') {
-      const dur = type === 'nuke' ? 0.7 : (type === 'explosion' ? 0.4 : 0.14);
-      const bufSize = audioCtx.sampleRate * dur, buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate), data = buf.getChannelData(0);
+      const dur = type === 'nuke' ? 0.65 : (type === 'explosion' ? 0.36 : 0.13);
+      const bufSize = Math.floor(audioCtx.sampleRate * dur), buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate), data = buf.getChannelData(0);
       for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * (dur * 0.35)));
       const noise = audioCtx.createBufferSource(); noise.buffer = buf;
       const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
       filter.frequency.setValueAtTime(type === 'nuke' ? 280 : (type === 'explosion' ? 480 : 1400), now);
-      const gain = audioCtx.createGain(); gain.gain.setValueAtTime(type === 'nuke' ? 0.7 : (type === 'explosion' ? 0.5 : 0.3), now);
+      const gain = audioCtx.createGain(); gain.gain.setValueAtTime(type === 'nuke' ? 0.65 : (type === 'explosion' ? 0.45 : 0.25), now);
       noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); noise.start(now);
     } else if (type === 'laser') {
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-      osc.type = 'square'; osc.frequency.setValueAtTime(720, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
-      gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.08);
+      osc.type = 'square'; osc.frequency.setValueAtTime(720, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.07);
+      gain.gain.setValueAtTime(0.13, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.07);
     } else if (type === 'freeze') {
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-      osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.linearRampToValueAtTime(1600, now + 0.18);
-      gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
-      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.18);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.linearRampToValueAtTime(1600, now + 0.16);
+      gain.gain.setValueAtTime(0.22, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.16);
     } else if (type === 'coin' || type === 'quest') {
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
       osc.type = 'sine'; osc.frequency.setValueAtTime(type === 'quest' ? 587 : 880, now);
       osc.frequency.setValueAtTime(type === 'quest' ? 880 : 1320, now + 0.06);
-      gain.gain.setValueAtTime(0.22, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
-      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.18);
+      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.16);
     }
   } catch (e) {}
 }
@@ -297,82 +328,125 @@ function vibrate(pattern) {
   try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
 }
 
-let money = 0, unlocked = ['hand'], weaponLevels = {}, unlockedSkins = ['classic'], currentSkin = 'classic';
+let money = 0, unlocked = ['hand'], weaponLevels = {}, turretLevels = {}, unlockedSkins = ['classic'], currentSkin = 'classic';
 let prestigeLevel = 0, currentTheme = 'box', currentWeapon = 'hand', currentShopCat = 'melee';
-let combo = 0, comboTimer = 0, goldRushTimer = 0, berserkTimer = 0, pinata = null, meteorShower = null, eventCooldown = 900;
-let quest = { type: 'hits', target: 20, progress: 0, reward: 30, text: 'Uderz kukłę 20 razy' };
+let combo = 0, comboTimer = 0, fever = 0, overdriveTimer = 0, goldRushTimer = 0, pinata = null, meteorShower = null, goldDrone = null, eventCooldown = 950;
+let quest = { type: 'hits', target: 25, progress: 0, reward: 40, text: '🎯 Misja: Traf kukłę 25x' };
 WEAPONS.forEach(w => { weaponLevels[w.id] = 1; });
+TURRETS.forEach(tb => { turretLevels[tb.id] = 0; });
 
 const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
-let width, height;
+let width = window.innerWidth || 800, height = window.innerHeight || 400;
 
-function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+function resize() {
+  const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  if (settings.forceLandscape) {
+    width = canvas.width = Math.max(300, Math.floor(vh));
+    height = canvas.height = Math.max(200, Math.floor(vw));
+  } else {
+    width = canvas.width = Math.max(300, Math.floor(vw));
+    height = canvas.height = Math.max(200, Math.floor(vh));
+  }
+  clampDummyToBounds();
+}
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => { setTimeout(resize, 120); setTimeout(resize, 350); });
+if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
+
+function changeLang(l) { currentLang = l; saveGame(); updateLangUI(); generateQuest(); renderShopList(); }
+function updateLangUI() {
+  document.getElementById('ui-shop').textContent = tr('shop');
+  document.getElementById('shop-title-text').textContent = tr('shop');
+  document.getElementById('set-title-text').textContent = tr('settings');
+  document.getElementById('tab-m').textContent = `🏏 ${tr('meleeTab')} (11)`;
+  document.getElementById('tab-g').textContent = `🔫 ${tr('gunsTab')} (11)`;
+  document.getElementById('tab-a').textContent = `🦖 ${tr('animalsTab')} (11)`;
+  document.getElementById('tab-e').textContent = `☢️ ${tr('elementsTab')} (11)`;
+  document.getElementById('tab-s').textContent = `⚡ ${tr('mythicTab')} (11)`;
+  document.getElementById('tab-t').textContent = `🤖 ${tr('turretsTab')} (5)`;
+  document.getElementById('tab-sk').textContent = `🎭 ${tr('skinsTab')} (14)`;
+  document.getElementById('tab-pr').textContent = `🌟 ${tr('prestigeTab')}`;
+}
 
 function loadSave() {
   try {
-    const m = localStorage.getItem('ktb3_money'); if (m !== null) money = parseFloat(m) || 0;
-    const u = localStorage.getItem('ktb3_unlocked'); if (u) unlocked = JSON.parse(u);
-    if (!unlocked.includes('hand')) unlocked.unshift('hand');
-    const wl = localStorage.getItem('ktb3_wlevels'); if (wl) Object.assign(weaponLevels, JSON.parse(wl));
-    const sk = localStorage.getItem('ktb3_skins'); if (sk) unlockedSkins = JSON.parse(sk);
-    const csk = localStorage.getItem('ktb3_cur_skin'); if (csk && unlockedSkins.includes(csk)) currentSkin = csk;
-    const pr = localStorage.getItem('ktb3_prestige'); if (pr !== null) prestigeLevel = parseInt(pr, 10) || 0;
-    const th = localStorage.getItem('ktb3_theme'); if (th) currentTheme = th;
-    const st = localStorage.getItem('ktb3_settings'); if (st) Object.assign(settings, JSON.parse(st));
-    const lg = localStorage.getItem('ktb3_lang'); if (lg) { currentLang = lg; document.getElementById('lang-select').value = lg; }
+    const m = localStorage.getItem('ktb4_money'); if (m !== null) money = parseFloat(m) || 0;
+    if (!isFinite(money) || money < 0) money = 0;
+    const u = localStorage.getItem('ktb4_unlocked'); if (u) unlocked = JSON.parse(u);
+    if (!Array.isArray(unlocked) || !unlocked.includes('hand')) unlocked = ['hand'];
+    const wl = localStorage.getItem('ktb4_wlevels'); if (wl) Object.assign(weaponLevels, JSON.parse(wl));
+    const tl = localStorage.getItem('ktb4_tlevels'); if (tl) Object.assign(turretLevels, JSON.parse(tl));
+    const sk = localStorage.getItem('ktb4_skins'); if (sk) unlockedSkins = JSON.parse(sk);
+    const csk = localStorage.getItem('ktb4_cur_skin'); if (csk && unlockedSkins.includes(csk)) currentSkin = csk;
+    const pr = localStorage.getItem('ktb4_prestige'); if (pr !== null) prestigeLevel = parseInt(pr, 10) || 0;
+    const th = localStorage.getItem('ktb4_theme'); if (th) currentTheme = th;
+    const st = localStorage.getItem('ktb4_settings'); if (st) Object.assign(settings, JSON.parse(st));
+    const lg = localStorage.getItem('ktb4_lang'); if (lg && LANG[lg]) { currentLang = lg; document.getElementById('lang-select').value = lg; }
   } catch (e) {}
   updateLangUI(); applySettingsUI(); generateQuest(); updateHUD(); renderBottomBar();
 }
 
 function saveGame() {
   try {
-    localStorage.setItem('ktb3_money', money);
-    localStorage.setItem('ktb3_unlocked', JSON.stringify(unlocked));
-    localStorage.setItem('ktb3_wlevels', JSON.stringify(weaponLevels));
-    localStorage.setItem('ktb3_skins', JSON.stringify(unlockedSkins));
-    localStorage.setItem('ktb3_cur_skin', currentSkin);
-    localStorage.setItem('ktb3_prestige', prestigeLevel);
-    localStorage.setItem('ktb3_theme', currentTheme);
-    localStorage.setItem('ktb3_settings', JSON.stringify(settings));
-    localStorage.setItem('ktb3_lang', currentLang);
+    localStorage.setItem('ktb4_money', money);
+    localStorage.setItem('ktb4_unlocked', JSON.stringify(unlocked));
+    localStorage.setItem('ktb4_wlevels', JSON.stringify(weaponLevels));
+    localStorage.setItem('ktb4_tlevels', JSON.stringify(turretLevels));
+    localStorage.setItem('ktb4_skins', JSON.stringify(unlockedSkins));
+    localStorage.setItem('ktb4_cur_skin', currentSkin);
+    localStorage.setItem('ktb4_prestige', prestigeLevel);
+    localStorage.setItem('ktb4_theme', currentTheme);
+    localStorage.setItem('ktb4_settings', JSON.stringify(settings));
+    localStorage.setItem('ktb4_lang', currentLang);
   } catch (e) {}
 }
 
 function hardReset() {
-  if (!confirm('Zresetować cały postęp do zera?')) return;
+  if (!confirm('Zresetować cały postęp, wieżyczki i Prestige do zera?')) return;
   localStorage.clear();
-  money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; });
+  money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; }); TURRETS.forEach(tb => { turretLevels[tb.id] = 0; });
   unlockedSkins = ['classic']; currentSkin = 'classic'; prestigeLevel = 0; currentTheme = 'box'; currentWeapon = 'hand';
+  combo = 0; fever = 0; overdriveTimer = 0; goldRushTimer = 0;
   generateQuest(); saveGame(); toggleSettings(); updateHUD(); renderBottomBar(); resetDummy();
 }
 
 function getSkinMult() { const s = SKINS.find(x => x.id === currentSkin); return s ? s.mult : 1.0; }
-function getPrestigeMult() { return Math.pow(1.6, prestigeLevel); }
+function getPrestigeMult() { return Math.pow(1.75, prestigeLevel); }
 function getTotalMultiplier() {
   let m = getSkinMult() * getPrestigeMult();
-  if (goldRushTimer > 0 || berserkTimer > 0) m *= 2;
-  if (combo > 1) m *= (1 + Math.min(combo, 100) * 0.02);
+  if (goldRushTimer > 0) m *= 2;
+  if (overdriveTimer > 0) m *= 3;
+  if (combo > 1) m *= (1 + Math.min(combo, 75) * 0.02);
   return m;
 }
 function getWeaponLevel(id) { return weaponLevels[id] || 1; }
-function getWeaponUpgradeCost(w) { return Math.round(w.upgBase * Math.pow(1.6, getWeaponLevel(w.id) - 1)); }
-function getWeaponReward(w) { return Math.max(1, Math.round(w.reward * Math.pow(1.22, getWeaponLevel(w.id) - 1) * getTotalMultiplier())); }
+function getWeaponUpgradeCost(w) { return Math.round(w.upgBase * Math.pow(1.62, getWeaponLevel(w.id) - 1)); }
+function getWeaponReward(w) { return Math.max(1, Math.round(w.reward * Math.pow(1.24, getWeaponLevel(w.id) - 1) * getTotalMultiplier())); }
+function getTurretCost(tb) { const lv = turretLevels[tb.id] || 0; return Math.round(tb.cost * Math.pow(1.75, lv)); }
+function getTurretShotReward(tb) { const lv = turretLevels[tb.id] || 0; if (lv <= 0) return 0; return Math.max(1, Math.round(tb.baseDps * Math.pow(1.32, lv - 1) * getTotalMultiplier())); }
+function getTotalDps() {
+  let dps = 0;
+  TURRETS.forEach(tb => { if ((turretLevels[tb.id] || 0) > 0) dps += getTurretShotReward(tb) * (60 / tb.rate); });
+  return dps;
+}
 function getBestUnlockedBaseReward() {
   let best = 2;
   WEAPONS.forEach(w => { if (unlocked.includes(w.id)) { const r = getWeaponReward(w); if (r > best) best = r; } });
   return best;
 }
 
-function addMoney(amount, x, y, customLabel = '') {
+function addMoney(amount, x, y, customLabel = '', customColor = '') {
+  if (!isFinite(amount) || amount <= 0) return;
   money += amount; updateHUD(); saveGame();
   if (x !== undefined && y !== undefined) {
+    if (floatingTexts.length > 26) floatingTexts.shift();
     floatingTexts.push({
-      x: x + (Math.random() - 0.5) * 34, y: y - 12,
+      x: x + (Math.random() - 0.5) * 32, y: y - 10,
       text: customLabel ? `${customLabel} +$${fmt(amount)}` : `+$${fmt(amount)}`,
-      vy: -2.4, life: 1.0,
-      color: customLabel ? '#fde047' : (goldRushTimer > 0 ? '#fef08a' : '#4ade80'),
-      scale: customLabel ? 1.3 : 1.05
+      vy: -2.3, life: 1.0,
+      color: customColor || (customLabel ? '#fde047' : (overdriveTimer > 0 ? '#fb7185' : '#4ade80')),
+      scale: customLabel ? 1.28 : 1.0
     });
   }
 }
@@ -382,6 +456,9 @@ function updateHUD() {
   const sm = document.getElementById('shop-money'); if (sm) sm.textContent = `$${fmt(money)}`;
   const mult = getTotalMultiplier();
   document.getElementById('mult-display').textContent = `⚡ x${mult >= 100 ? fmt(mult) : mult.toFixed(2)}`;
+  document.getElementById('dps-display').textContent = `🤖 $${fmt(getTotalDps())}/s`;
+  document.getElementById('fever-fill').style.width = `${Math.min(100, Math.round(fever))}%`;
+  document.getElementById('fever-lbl').textContent = overdriveTimer > 0 ? `🔥 x3 (${Math.ceil(overdriveTimer / 60)}s)` : '🔥 OVERDRIVE';
   const w = WEAPONS.find(x => x.id === currentWeapon);
   if (w) {
     const lv = getWeaponLevel(w.id), cost = getWeaponUpgradeCost(w), btn = document.getElementById('quick-upgrade-btn');
@@ -393,10 +470,10 @@ function updateHUD() {
 function generateQuest() {
   const base = getBestUnlockedBaseReward();
   const types = [
-    { type: 'hits', target: 30 + Math.floor(Math.random() * 30), mult: 12, label: t => `${t('quest')} Traf kukłę ${t}x` },
-    { type: 'combo', target: 15 + Math.floor(Math.random() * 15), mult: 15, label: t => `${t('quest')} Wbij Combo x${t}` },
-    { type: 'upgrade', target: 1, mult: 18, label: () => `${t('quest')} Ulepsz broń` },
-    { type: 'wall', target: 10, mult: 14, label: t => `${t('quest')} Rzuć o ścianę ${t}x` }
+    { type: 'hits', target: 25 + Math.floor(Math.random() * 25), mult: 10, label: n => `${tr('quest')} ${tr('qHits')} ${n}x` },
+    { type: 'combo', target: 15 + Math.floor(Math.random() * 15), mult: 12, label: n => `${tr('quest')} ${tr('qCombo')} x${n}` },
+    { type: 'upgrade', target: 1, mult: 14, label: () => `${tr('quest')} ${tr('qUpg')}` },
+    { type: 'wall', target: 8, mult: 11, label: n => `${tr('quest')} ${tr('qWall')} ${n}x` }
   ];
   const pick = types[Math.floor(Math.random() * types.length)];
   quest = { type: pick.type, target: pick.target, progress: 0, reward: Math.max(30, Math.round(base * pick.mult)), text: pick.label(pick.target) };
@@ -407,7 +484,7 @@ function advanceQuest(type, val = 1, isAbsolute = false) {
   if (quest.type !== type) return;
   quest.progress = isAbsolute ? Math.max(quest.progress, val) : quest.progress + val;
   if (quest.progress >= quest.target) {
-    playSound('quest'); vibrate([40, 30, 70]);
+    playSound('quest'); vibrate([40, 30, 75]);
     addMoney(quest.reward, width * 0.5, height * 0.3, '🎁 MISJA!');
     generateQuest();
   } else updateQuestUI();
@@ -444,12 +521,12 @@ function upgradeCurrentWeapon() {
 
 function toggleShop() { const m = document.getElementById('shop-modal'); m.classList.toggle('open'); if (m.classList.contains('open')) renderShopList(); }
 function toggleSettings() { document.getElementById('settings-modal').classList.toggle('open'); }
-
 document.getElementById('ui-shop').onclick = toggleShop;
-document.getElementById('ui-reset').onclick = resetDummy;
+document.getElementById('ui-reset').onclick = () => resetDummy();
 document.getElementById('ui-settings').onclick = toggleSettings;
 document.getElementById('shop-close-btn').onclick = toggleShop;
 document.getElementById('set-close-btn').onclick = toggleSettings;
+document.getElementById('quick-upgrade-btn').onclick = upgradeCurrentWeapon;
 
 function switchCategory(cat, btn) {
   currentShopCat = cat;
@@ -457,15 +534,27 @@ function switchCategory(cat, btn) {
   btn.classList.add('active'); renderShopList();
 }
 
-function getPrestigeCost() { return 1000000000 * Math.pow(35, prestigeLevel); }
+function getPrestigeCost() { return 500000000 * Math.pow(35, prestigeLevel); }
 
 function renderShopList() {
   const list = document.getElementById('shop-list'); list.innerHTML = '';
+  if (currentShopCat === 'turrets') {
+    TURRETS.forEach(tb => {
+      const lv = turretLevels[tb.id] || 0, cost = getTurretCost(tb), canAff = money >= cost;
+      const item = document.createElement('div'); item.className = 'shop-item' + (lv > 0 ? ' unlocked' : '');
+      item.innerHTML = `<div class="item-info"><div class="item-icon">${tb.icon}</div><div><div class="item-name">${tb.name} <span style="color:#fde047;font-size:10px;">Lv.${lv}</span></div><div class="item-desc">${tb.desc}</div><div class="item-reward">${lv > 0 ? `+$${fmt(getTurretShotReward(tb))} / strzał` : `Start: +$${fmt(tb.baseDps)}`}</div></div></div><button class="buy-btn ${canAff ? (lv > 0 ? 'upg-btn' : '') : 'locked-poor'}">${lv > 0 ? `⬆️ Lv.${lv + 1}` : tr('buy')} $${fmt(cost)}</button>`;
+      item.querySelector('button').onclick = () => {
+        if (money >= cost) { money -= cost; turretLevels[tb.id] = lv + 1; playSound('coin'); vibrate(35); advanceQuest('upgrade', 1); saveGame(); updateHUD(); renderShopList(); }
+      };
+      list.appendChild(item);
+    });
+    return;
+  }
   if (currentShopCat === 'skins') {
     SKINS.forEach(s => {
       const isUnl = unlockedSkins.includes(s.id), isEq = currentSkin === s.id, canAff = money >= s.cost;
       const item = document.createElement('div'); item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
-      let btnText = isUnl ? (isEq ? t('eq') : t('use')) : `${t('buy')} $${fmt(s.cost)}`;
+      let btnText = isUnl ? (isEq ? tr('eq') : tr('use')) : `${tr('buy')} $${fmt(s.cost)}`;
       let btnClass = 'buy-btn' + (isUnl ? (isEq ? ' equipped' : ' select-mode') : (!canAff ? ' locked-poor' : ''));
       item.innerHTML = `<div class="item-info"><div class="item-icon">${s.icon}</div><div><div class="item-name">${s.name}</div><div class="item-desc">${s.desc}</div></div></div><button class="${btnClass}">${btnText}</button>`;
       item.querySelector('button').onclick = () => {
@@ -479,19 +568,19 @@ function renderShopList() {
   if (currentShopCat === 'prestige') {
     const pCost = getPrestigeCost(), canP = money >= pCost, pCard = document.createElement('div');
     pCard.className = 'shop-item unlocked'; pCard.style.gridColumn = '1 / -1';
-    pCard.innerHTML = `<div class="item-info"><div class="item-icon">🌟</div><div><div class="item-name">${t('prestigeBtn')} Lv.${prestigeLevel}</div><div class="item-desc">Resetuje kasę i bronie, ale daje STAŁY mnożnik x1.8 i nową arenę!</div><div class="item-reward">Koszt: $${fmt(pCost)}</div></div></div><button class="buy-btn ${canP ? 'upg-btn' : 'locked-poor'}">PRESTIGE</button>`;
+    pCard.innerHTML = `<div class="item-info"><div class="item-icon">🌟</div><div><div class="item-name">${tr('prestigeBtn')} Lv.${prestigeLevel}</div><div class="item-desc">Resetuje kasę, bronie, wieżyczki i misje, dając STAŁY mnożnik x1.75 (Kolejny: x${Math.pow(1.75, prestigeLevel + 1).toFixed(2)}) i nową arenę!</div><div class="item-reward">Koszt: $${fmt(pCost)}</div></div></div><button class="buy-btn ${canP ? 'upg-btn' : 'locked-poor'}">PRESTIGE ($${fmt(pCost)})</button>`;
     pCard.querySelector('button').onclick = () => {
-      if (money < pCost || !confirm('Zresetować bronie i kasę za stały Prestige?')) return;
-      prestigeLevel++; money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; }); currentWeapon = 'hand';
-      combo = 0; comboTimer = 0; pinata = null; goldRushTimer = 0; berserkTimer = 0;
-      const newTheme = THEMES.find(t => t.reqPrestige === prestigeLevel); if (newTheme) currentTheme = newTheme.id;
-      generateQuest(); playSound('quest'); vibrate([80, 40, 140]); saveGame(); renderBottomBar(); renderShopList();
+      if (money < pCost || !confirm('Wykonać Prestige? Zresetuje kasę, bronie, wieżyczki i misje w zamian za stały mnożnik!')) return;
+      prestigeLevel++; money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; }); TURRETS.forEach(tb => { turretLevels[tb.id] = 0; }); currentWeapon = 'hand';
+      combo = 0; comboTimer = 0; fever = 0; overdriveTimer = 0; pinata = null; goldDrone = null; goldRushTimer = 0;
+      const newTheme = THEMES.find(th => th.reqPrestige === prestigeLevel); if (newTheme) currentTheme = newTheme.id;
+      generateQuest(); playSound('quest'); vibrate([80, 40, 150]); saveGame(); renderBottomBar(); renderShopList();
     };
     list.appendChild(pCard);
     THEMES.forEach(th => {
       const isUnl = prestigeLevel >= th.reqPrestige, isEq = currentTheme === th.id, item = document.createElement('div');
       item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
-      item.innerHTML = `<div class="item-info"><div class="item-icon" style="background:${th.c1};border:2px solid ${th.border};">🏟️</div><div><div class="item-name">${th.name}</div><div class="item-desc">${isUnl ? t('active') : `Wymaga Prestige ${th.reqPrestige}`}</div></div></div><button class="buy-btn ${isUnl ? (isEq ? 'equipped' : 'select-mode') : 'locked-poor'}">${isUnl ? (isEq ? t('active') : t('choose')) : 'Lock'}</button>`;
+      item.innerHTML = `<div class="item-info"><div class="item-icon" style="background:${th.c1};border:2px solid ${th.border};">🏟️</div><div><div class="item-name">${th.name}</div><div class="item-desc">${isUnl ? tr('active') : `Prestige ${th.reqPrestige}`}</div></div></div><button class="buy-btn ${isUnl ? (isEq ? 'equipped' : 'select-mode') : 'locked-poor'}">${isUnl ? (isEq ? tr('active') : tr('choose')) : '🔒'}</button>`;
       item.querySelector('button').onclick = () => { if (isUnl) { currentTheme = th.id; saveGame(); renderShopList(); } };
       list.appendChild(item);
     });
@@ -501,7 +590,7 @@ function renderShopList() {
     const isUnl = unlocked.includes(w.id), isEq = currentWeapon === w.id, canAff = money >= w.cost;
     const lv = getWeaponLevel(w.id), upgCost = getWeaponUpgradeCost(w), canUpg = money >= upgCost;
     const item = document.createElement('div'); item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
-    let btnText = isUnl ? (isEq ? t('sel') : t('choose')) : `${t('buy')} $${fmt(w.cost)}`;
+    let btnText = isUnl ? (isEq ? tr('sel') : tr('choose')) : `${tr('buy')} $${fmt(w.cost)}`;
     let btnClass = 'buy-btn' + (isUnl ? (isEq ? ' equipped' : ' select-mode') : (!canAff ? ' locked-poor' : ''));
     item.innerHTML = `<div class="item-info"><div class="item-icon">${w.icon}</div><div><div class="item-name">${w.name} <span style="color:#fde047;font-size:10px;">Lv.${lv}</span></div><div class="item-desc">${w.desc}</div><div class="item-reward">+$${fmt(getWeaponReward(w))} / hit</div></div></div><div class="item-actions"><button class="${btnClass} act-main">${btnText}</button>${isUnl ? `<button class="buy-btn ${canUpg ? 'upg-btn' : 'locked-poor'} act-upg">⬆️ Lv.${lv + 1} ($${fmt(upgCost)})</button>` : ''}</div>`;
     item.querySelector('.act-main').onclick = () => {
@@ -520,18 +609,21 @@ function toggleSetting(key) {
   settings[key] = !settings[key];
   if (key === 'sound' && settings.sound) playSound('coin');
   if (key === 'vibration' && settings.vibration) vibrate([50, 30, 50]);
+  if (key === 'blood' && !settings.blood) bloodSplats = [];
   applySettingsUI(); saveGame();
 }
+function toggleForceLandscape() { settings.forceLandscape = !settings.forceLandscape; applySettingsUI(); saveGame(); resize(); }
 function applySettingsUI() {
-  const bS = document.getElementById('btn-sound'); bS.textContent = settings.sound ? 'ON' : 'OFF'; bS.className = 'toggle-btn ' + (settings.sound ? 'toggle-on' : 'toggle-off');
-  const bV = document.getElementById('btn-vib'); bV.textContent = settings.vibration ? 'ON' : 'OFF'; bV.className = 'toggle-btn ' + (settings.vibration ? 'toggle-on' : 'toggle-off');
-}
+  const setBtn = (id, val) => { const b = document.getElementById(id); if (b) { b.textContent = val ? 'ON' : 'OFF'; b.className = 'toggle-btn ' + (val ? 'toggle-on' : 'toggle-off'); } };
+  setBtn('btn-sound', settings.sound); setBtn('btn-vib', settings.vibration); setBtn('btn-blood', settings.blood); setBtn('btn-rot', settings.forceLandscape);
+  document.body.classList.toggle('force-landscape', settings.forceLandscape);
+};
 const gravity = 0.42, friction = 0.985, bounce = 0.58;
 let points = [], sticks = [], dummy = {};
-let particles = [], shockwaves = [], floatingTexts = [], tracers = [], bees = [], animals = [], blackHoles = [], lightnings = [], anvils = [], rockets = [], beams = [], bloodSplats = [];
-let screenShake = 0, flashAlpha = 0, hurtTimer = 0, shockTimer = 0, burnTimer = 0, burnTick = 0, frozenTimer = 0;
+let particles = [], shockwaves = [], floatingTexts = [], tracers = [], bees = [], animals = [], blackHoles = [], lightnings = [], anvils = [], rockets = [], beams = [], bloodSplats = [], swipeTrail = [], turretShots = [];
+let screenShake = 0, flashAlpha = 0, hurtTimer = 0, shockTimer = 0, burnTimer = 0, burnTick = 0, frozenTimer = 0, frameCount = 0;
 
-function getBoxBounds() { return { left: 14, right: width - 14, top: 48, bottom: height - 52 }; }
+function getBoxBounds() { return { left: 12, right: Math.max(200, width - 12), top: 58, bottom: Math.max(180, height - 56) }; }
 
 class Point {
   constructor(x, y, r, name = '') { this.x = x; this.y = y; this.oldx = x; this.oldy = y; this.r = r; this.name = name; }
@@ -543,47 +635,66 @@ class Stick {
   }
 }
 
+function clampDummyToBounds() {
+  if (!points.length) return;
+  const b = getBoxBounds();
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    if (!isFinite(p.x) || !isFinite(p.y)) { initDummy(); return; }
+    p.x = Math.min(b.right - p.r, Math.max(b.left + p.r, p.x));
+    p.y = Math.min(b.bottom - p.r, Math.max(b.top + p.r, p.y));
+    p.oldx = p.x; p.oldy = p.y;
+  }
+}
+
 function initDummy() {
   points = []; sticks = []; bloodSplats = [];
-  const cx = width * 0.5, cy = height * 0.46;
-  const head = new Point(cx, cy - 58, 25, 'head'), neck = new Point(cx, cy - 28, 8, 'neck');
-  const chest = new Point(cx, cy - 4, 13, 'chest'), pelvis = new Point(cx, cy + 24, 12, 'pelvis');
-  const lElbow = new Point(cx - 25, cy - 10, 8), lHand = new Point(cx - 44, cy + 10, 10);
-  const rElbow = new Point(cx + 25, cy - 10, 8), rHand = new Point(cx + 44, cy + 10, 10);
-  const lKnee = new Point(cx - 16, cy + 54, 9), lFoot = new Point(cx - 20, cy + 85, 11);
-  const rKnee = new Point(cx + 16, cy + 54, 9), rFoot = new Point(cx + 20, cy + 85, 11);
+  const cx = width * 0.5, cy = height * 0.48;
+  const head = new Point(cx, cy - 56, 24, 'head'), neck = new Point(cx, cy - 27, 8, 'neck');
+  const chest = new Point(cx, cy - 3, 13, 'chest'), pelvis = new Point(cx, cy + 24, 12, 'pelvis');
+  const lElbow = new Point(cx - 24, cy - 9, 8), lHand = new Point(cx - 43, cy + 10, 10);
+  const rElbow = new Point(cx + 24, cy - 9, 8), rHand = new Point(cx + 43, cy + 10, 10);
+  const lKnee = new Point(cx - 16, cy + 52, 9), lFoot = new Point(cx - 19, cy + 82, 11);
+  const rKnee = new Point(cx + 16, cy + 52, 9), rFoot = new Point(cx + 19, cy + 82, 11);
   points.push(head, neck, chest, pelvis, lElbow, lHand, rElbow, rHand, lKnee, lFoot, rKnee, rFoot);
   sticks.push(
-    new Stick(head, neck, 30, 11, 'skin'), new Stick(neck, chest, 24, 24, 'shirt'), new Stick(chest, pelvis, 28, 22, 'shirt'),
-    new Stick(neck, lElbow, 28, 11, 'shirt'), new Stick(lElbow, lHand, 25, 10, 'skin'),
-    new Stick(neck, rElbow, 28, 11, 'shirt'), new Stick(rElbow, rHand, 25, 10, 'skin'),
-    new Stick(pelvis, lKnee, 32, 13, 'pants'), new Stick(lKnee, lFoot, 30, 11, 'skin'),
-    new Stick(pelvis, rKnee, 32, 13, 'pants'), new Stick(rKnee, rFoot, 30, 11, 'skin'),
-    new Stick(head, chest, 52, 0, '', false), new Stick(neck, pelvis, 52, 0, '', false),
-    new Stick(head, pelvis, 80, 0, '', false), new Stick(lElbow, rElbow, 45, 0, '', false), new Stick(lKnee, rKnee, 30, 0, '', false)
+    new Stick(head, neck, 29, 11, 'skin'), new Stick(neck, chest, 24, 24, 'shirt'), new Stick(chest, pelvis, 27, 22, 'shirt'),
+    new Stick(neck, lElbow, 27, 11, 'shirt'), new Stick(lElbow, lHand, 24, 10, 'skin'),
+    new Stick(neck, rElbow, 27, 11, 'shirt'), new Stick(rElbow, rHand, 24, 10, 'skin'),
+    new Stick(pelvis, lKnee, 31, 13, 'pants'), new Stick(lKnee, lFoot, 29, 11, 'skin'),
+    new Stick(pelvis, rKnee, 31, 13, 'pants'), new Stick(rKnee, rFoot, 29, 11, 'skin'),
+    new Stick(head, chest, 51, 0, '', false), new Stick(neck, pelvis, 51, 0, '', false),
+    new Stick(head, pelvis, 78, 0, '', false), new Stick(lElbow, rElbow, 44, 0, '', false), new Stick(lKnee, rKnee, 30, 0, '', false)
   );
   dummy = { head, neck, chest, pelvis, lHand, rHand, lFoot, rFoot };
 }
 
 function resetDummy() {
-  bees = []; animals = []; blackHoles = []; anvils = []; rockets = []; beams = []; bloodSplats = [];
+  bees = []; animals = []; blackHoles = []; anvils = []; rockets = []; beams = []; bloodSplats = []; turretShots = [];
   burnTimer = 0; shockTimer = 0; frozenTimer = 0; initDummy();
 }
 
-function addShockwave(x, y, maxR = 120, color = '#facc15') { shockwaves.push({ x, y, r: 10, maxR, color, life: 1.0 }); }
-function spawnStuffing(x, y, count = 12, speed = 8, customColor = null) {
+function addShockwave(x, y, maxR = 120, color = '#facc15') {
+  if (shockwaves.length > 12) shockwaves.shift();
+  shockwaves.push({ x, y, r: 10, maxR, color, life: 1.0 });
+}
+
+function spawnStuffing(x, y, count = 10, speed = 8, customColor = null) {
   for (let i = 0; i < count; i++) {
+    if (particles.length > 130) particles.shift();
     const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * speed, t = Math.random();
     particles.push({
-      x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, size: 3 + Math.random() * 4,
+      x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, size: 2.8 + Math.random() * 4,
       color: customColor || (t < 0.45 ? '#f5e6cc' : (t < 0.8 ? '#f59e0b' : '#ef4444')), life: 1.0
     });
   }
 }
 
-function addBloodSplat(x, y) {
-  bloodSplats.push({ x: x + (Math.random() - 0.5) * 16, y: y + (Math.random() - 0.5) * 16, size: 4 + Math.random() * 8, alpha: 0.85 });
-  if (bloodSplats.length > 35) bloodSplats.shift();
+function addBattleMark() {
+  if (!settings.blood) return;
+  const targetIdx = Math.floor(Math.random() * 4); // head, neck, chest, pelvis
+  bloodSplats.push({ idx: targetIdx, ox: (Math.random() - 0.5) * 20, oy: (Math.random() - 0.5) * 20, size: 3.5 + Math.random() * 5.5, alpha: 0.75 });
+  if (bloodSplats.length > 26) bloodSplats.shift();
 }
 
 function applyForceToDummy(originX, originY, forceX, forceY, radius = 165) {
@@ -597,42 +708,56 @@ function applyForceToDummy(originX, originY, forceX, forceY, radius = 165) {
 }
 
 function registerCombo() {
-  combo++; comboTimer = 110;
+  combo++; comboTimer = 115;
+  if (overdriveTimer <= 0) {
+    fever = Math.min(100, fever + 2.8);
+    if (fever >= 100) {
+      overdriveTimer = 600; // 10s Overdrive x3
+      playSound('quest'); vibrate([80, 40, 120]);
+      addShockwave(dummy.chest.x, dummy.chest.y, 240, '#f43f5e');
+    }
+  }
   const box = document.getElementById('combo-box');
   if (combo >= 2) {
-    box.style.display = 'block'; box.style.transform = 'scale(1.22)';
-    setTimeout(() => { box.style.transform = 'scale(1)'; }, 80);
+    box.style.display = 'block'; box.style.transform = 'scale(1.2)';
+    setTimeout(() => { box.style.transform = 'scale(1)'; }, 75);
     document.getElementById('combo-num').textContent = `COMBO x${combo}`;
-    document.getElementById('combo-sub').textContent = `Bonus +${Math.min(combo, 100) * 2}%`;
+    document.getElementById('combo-sub').textContent = `Bonus +${Math.min(combo, 75) * 2}%`;
     advanceQuest('combo', combo, true);
   }
 }
 
-function hitDummy(baseReward, x, y, fx, fy, shake = 7, soundType = 'hit', customVib = null) {
-  registerCombo(); advanceQuest('hits', 1);
-  let finalReward = baseReward, label = '';
+function hitDummy(baseReward, x, y, fx, fy, shake = 7, soundType = 'hit', customVib = null, fromTurret = false) {
+  if (!fromTurret) { registerCombo(); advanceQuest('hits', 1); }
+  let finalReward = baseReward, label = '', col = '';
   const wData = getWeaponData(currentWeapon);
   const vibPat = customVib || (wData ? wData.vib : [30]);
 
   if (frozenTimer > 0 && soundType !== 'freeze') {
-    frozenTimer = 0; finalReward = Math.round(finalReward * 2.5); label = '❄️ KRUSZENIE x2.5!';
-    addShockwave(x, y, 150, '#67e8f9'); spawnStuffing(x, y, 26, 14, '#67e8f9');
-    playSound('explosion'); vibrate([120, 30, 150]);
+    frozenTimer = 0; finalReward = Math.round(finalReward * 2.5); label = '❄️ KRUSZENIE x2.5!'; col = '#67e8f9';
+    addShockwave(x, y, 150, '#67e8f9'); spawnStuffing(x, y, 22, 13, '#67e8f9');
+    playSound('explosion'); if (!fromTurret) vibrate([120, 30, 150]);
   } else {
-    playSound(soundType); vibrate(vibPat);
+    if (!fromTurret && Math.random() < 0.12) {
+      finalReward *= 3; label = '💥 CRIT x3!'; col = '#fb7185'; shake = Math.max(shake, 13);
+      addShockwave(x, y, 115, '#fb7185');
+    }
+    if (!fromTurret) { playSound(soundType); vibrate(vibPat); }
   }
-  hurtTimer = 45; screenShake = Math.max(screenShake, shake);
-  addBloodSplat(x, y);
-  addMoney(finalReward, x, y, label); spawnStuffing(x, y, 11, 8);
+  hurtTimer = 42; screenShake = Math.max(screenShake, fromTurret ? 2 : shake);
+  addBattleMark();
+  addMoney(finalReward, x, y, label, col);
+  spawnStuffing(x, y, fromTurret ? 4 : 10, fromTurret ? 5 : 8);
   applyForceToDummy(x, y, fx, fy, 175);
 }
 
 let pointer = { x: 0, y: 0, prevX: 0, prevY: 0, down: false, grabbed: null };
 let holdTick = 0, batSwing = null, slamCooldown = 0;
-function getWeaponData(id) { return WEAPONS.find(w => w.id === id); }
+function getWeaponData(id) { return WEAPONS.find(w => w.id === id) || WEAPONS[0]; }
 
 function getPointerPos(e) {
   const touch = e.touches && e.touches[0] ? e.touches[0] : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0] : e);
+  if (settings.forceLandscape) return { x: touch.clientY, y: window.innerWidth - touch.clientX };
   return { x: touch.clientX, y: touch.clientY };
 }
 
@@ -642,94 +767,109 @@ function onPointerDown(e) {
   const pos = getPointerPos(e);
   pointer.x = pointer.prevX = pos.x; pointer.y = pointer.prevY = pos.y;
   pointer.down = true; holdTick = 0;
+  swipeTrail.push({ x: pos.x, y: pos.y, life: 1.0 });
+
   const w = getWeaponData(currentWeapon), reward = getWeaponReward(w);
 
-  if (pinata && Math.hypot(pos.x - pinata.x, pos.y - pinata.y) < 55) {
+  // Eventy do kliknięcia
+  if (pinata && Math.hypot(pos.x - pinata.x, pos.y - pinata.y) < 58) {
     pinata.hp--; playSound('coin'); vibrate([40, 20, 40]);
     spawnStuffing(pinata.x, pinata.y, 14, 10, '#facc15');
-    const bonus = Math.round(getBestUnlockedBaseReward() * 3.5);
+    const bonus = Math.round(getBestUnlockedBaseReward() * 4);
     addMoney(bonus, pinata.x, pinata.y, '🪅 PIÑATA!'); pinata.vy = -7;
-    if (pinata.hp <= 0) {
-      addShockwave(pinata.x, pinata.y, 160, '#facc15');
-      addMoney(bonus * 3, pinata.x, pinata.y, '🎉 ROZBITA!'); pinata = null;
-    }
+    if (pinata.hp <= 0) { addShockwave(pinata.x, pinata.y, 165, '#facc15'); addMoney(bonus * 3, pinata.x, pinata.y, '🎉 ROZBITA!'); pinata = null; }
     return;
   }
-
+  if (goldDrone && Math.hypot(pos.x - goldDrone.x, pos.y - goldDrone.y) < 58) {
+    playSound('quest'); vibrate([50, 25, 80]);
+    addShockwave(goldDrone.x, goldDrone.y, 170, '#fde047');
+    spawnStuffing(goldDrone.x, goldDrone.y, 20, 12, '#fde047');
+    addMoney(Math.round(getBestUnlockedBaseReward() * 14), goldDrone.x, goldDrone.y, '🚁 ZŁOTY DRON!');
+    goldDrone = null; return;
+  }
   if (meteorShower) {
     for (let i = meteorShower.length - 1; i >= 0; i--) {
-      let m = meteorShower[i];
-      if (Math.hypot(pos.x - m.x, m.y < pos.y ? pos.y - m.y : m.y - pos.y) < 60) {
-        playSound('coin'); vibrate(40);
-        addMoney(Math.round(getBestUnlockedBaseReward() * 2), m.x, m.y, '💰 METEOR!');
-        spawnStuffing(m.x, m.y, 10, 8, '#facc15');
-        meteorShower.splice(i, 1);
-        return;
+      const m = meteorShower[i];
+      if (Math.hypot(pos.x - m.x, pos.y - m.y) < 55) {
+        playSound('coin'); vibrate(35);
+        addMoney(Math.round(getBestUnlockedBaseReward() * 2.5), m.x, m.y, '💰 METEOR!');
+        spawnStuffing(m.x, m.y, 10, 8, '#facc15'); meteorShower.splice(i, 1); return;
       }
     }
   }
 
   const cx = dummy.chest.x, cy = dummy.chest.y;
-  if (currentWeapon === 'hand') {
+  if (w.act === 'hand') {
     let closest = null, minD = 75;
     points.forEach(p => { const d = Math.hypot(p.x - pos.x, p.y - pos.y); if (d < minD) { minD = d; closest = p; } });
-    if (closest) { pointer.grabbed = closest; hitDummy(reward, closest.x, closest.y, 0, -2, 3, 'hit', [25]); }
-  } else if (['bat', 'hammer', 'katana', 'mace', 'spear', 'excalibur', 'reaper', 'mjolnir', 'poseidon'].includes(currentWeapon)) {
+    if (closest) { pointer.grabbed = closest; hitDummy(reward, closest.x, closest.y, 0, -2, 3, 'hit', w.vib); }
+  } else if (w.act === 'melee' || w.act === 'melee_shock') {
     batSwing = { x: pos.x, y: pos.y, icon: w.icon, timer: 14 };
-    if (Math.hypot(cx - pos.x, cy - pos.y) < 155) {
+    if (Math.hypot(cx - pos.x, cy - pos.y) < 160) {
       const dir = pos.x < cx ? 1 : -1;
-      hitDummy(reward, dummy.head.x, dummy.head.y, dir * 22, -15, 12, 'bat', w.vib);
+      if (w.act === 'melee_shock') { addShockwave(dummy.head.x, dummy.head.y, 145, '#38bdf8'); shockTimer = 35; }
+      hitDummy(reward, dummy.head.x, dummy.head.y, dir * 24, -15, w.act === 'melee_shock' ? 14 : 9, w.act === 'melee_shock' ? 'explosion' : 'bat', w.vib);
     }
-  } else if (currentWeapon === 'anvil') {
-    anvils.push({ x: dummy.head.x + (Math.random() - 0.5) * 20, y: getBoxBounds().top + 15, vy: 6, reward, hasHit: false, life: 75 });
-  } else if (['pistol', 'shotgun', 'sniper', 'flak', 'plasma', 'gatling', 'deathray'].includes(currentWeapon)) {
-    fireGun(pos.x, pos.y, currentWeapon === 'shotgun' || currentWeapon === 'flak' ? 6 : 1, 0.05, reward, 16, 7, w.vib);
-  } else if (currentWeapon === 'rpg') {
+  } else if (w.act === 'anvil') {
+    anvils.push({ x: dummy.head.x + (Math.random() - 0.5) * 20, y: getBoxBounds().top + 15, vy: 6, reward, hasHit: false, life: 70 });
+  } else if (w.act === 'gun') {
+    fireGun(pos.x, pos.y, 1, 0.04, reward, 17, 7, w.vib);
+  } else if (w.act === 'shotgun') {
+    fireGun(pos.x, pos.y, 6, 0.24, reward, 26, 14, w.vib);
+  } else if (w.act === 'rocket') {
     const sx = width * 0.5, sy = height - 60, ang = Math.atan2(pos.y - sy, pos.x - sx);
-    rockets.push({ x: sx, y: sy, vx: Math.cos(ang) * 18, vy: Math.sin(ang) * 18, reward, vib: w.vib }); playSound('gun'); vibrate(35);
-  } else if (currentWeapon === 'orbital' || currentWeapon === 'zeusbolt' || currentWeapon === 'godhand') {
+    rockets.push({ x: sx, y: sy, vx: Math.cos(ang) * 19, vy: Math.sin(ang) * 19, reward, vib: w.vib }); playSound('gun'); vibrate(35);
+  } else if (w.act === 'beam') {
     beams.push({ x: dummy.chest.x, life: 1.0 });
-    flashAlpha = 0.7; addShockwave(dummy.chest.x, dummy.chest.y, 200, '#38bdf8');
+    flashAlpha = 0.72; addShockwave(dummy.chest.x, dummy.chest.y, 210, '#38bdf8');
     hitDummy(reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 35, -26, 22, 'explosion', w.vib);
-  } else if (['bees', 'shark', 'bull', 'dragon', 'trex', 'kraken', 'griffin', 'cerberus', 'hydra', 'behemoth'].includes(currentWeapon)) {
-    spawnAnimal(currentWeapon, w.icon, reward, 22, 0, w.vib);
-  } else if (currentWeapon === 'freeze') {
+  } else if (w.act === 'bees') {
+    spawnBeesBalanced(pos.x, pos.y, reward);
+  } else if (w.act === 'animal' || w.act === 'dragon') {
+    spawnAnimal(w.act, w.icon, reward, w.act === 'dragon' ? 16 : 23, w.id === 'shark' ? -6 : 0, w.vib);
+  } else if (w.act === 'freeze') {
     castFreeze(reward, w.vib);
-  } else if (currentWeapon === 'lightning') {
+  } else if (w.act === 'lightning') {
     strikeLightning(reward, w.vib);
-  } else if (currentWeapon === 'blackhole' || currentWeapon === 'singularity') {
+  } else if (w.act === 'blackhole') {
     spawnBlackHole(pos.x, pos.y, reward);
-  } else if (['nuke', 'tsunami', 'magma', 'supernova', 'antimatter', 'hades', 'kronos', 'infinity', 'cosmos', 'dimension', 'omnitool'].includes(currentWeapon)) {
+  } else if (w.act === 'nuke') {
     flashAlpha = 0.95;
-    addShockwave(dummy.chest.x, dummy.chest.y, 280, '#fde047');
-    addShockwave(dummy.chest.x, dummy.chest.y, 200, '#ef4444');
-    spawnStuffing(dummy.chest.x, dummy.chest.y, 45, 18, '#f97316');
-    burnTimer = 220;
-    hitDummy(reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 55, -36, 30, 'nuke', w.vib);
+    addShockwave(dummy.chest.x, dummy.chest.y, 280, '#fde047'); addShockwave(dummy.chest.x, dummy.chest.y, 200, '#ef4444');
+    spawnStuffing(dummy.chest.x, dummy.chest.y, 38, 17, '#f97316'); burnTimer = 200;
+    hitDummy(reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 52, -35, 30, 'nuke', w.vib);
   }
 }
 
 function onPointerMove(e) {
   if (!pointer.down) return;
-  e.preventDefault();
   const pos = getPointerPos(e);
   pointer.prevX = pointer.x; pointer.prevY = pointer.y; pointer.x = pos.x; pointer.y = pos.y;
+  swipeTrail.push({ x: pos.x, y: pos.y, life: 1.0 });
+  if (swipeTrail.length > 18) swipeTrail.shift();
+  const w = getWeaponData(currentWeapon);
+  if (w.act === 'melee' || w.act === 'melee_shock') {
+    const speed = Math.hypot(pointer.x - pointer.prevX, pointer.y - pointer.prevY);
+    if (speed > 15 && Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 95) {
+      hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (pointer.x - pointer.prevX) * 0.85, (pointer.y - pointer.prevY) * 0.85, 9, 'bat', w.vib);
+    }
+  }
 }
 
 function onPointerUp() { pointer.down = false; pointer.grabbed = null; }
 canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mousemove', onPointerMove); window.addEventListener('mouseup', onPointerUp);
-canvas.addEventListener('touchstart', onPointerDown, { passive: false }); window.addEventListener('touchmove', onPointerMove, { passive: false }); window.addEventListener('touchend', onPointerUp);
+canvas.addEventListener('touchstart', onPointerDown, { passive: false }); canvas.addEventListener('touchmove', e => { e.preventDefault(); onPointerMove(e); }, { passive: false }); window.addEventListener('touchend', onPointerUp);
 
 function fireGun(tx, ty, pellets, spread, reward, knockback, shake, vib) {
   const startX = width * 0.5, startY = height - 60;
   let hitAny = false;
   for (let i = 0; i < pellets; i++) {
     const px = tx + (Math.random() - 0.5) * spread * 240, py = ty + (Math.random() - 0.5) * spread * 240;
-    tracers.push({ x1: startX, y1: startY, x2: px, y2: py, life: 1.0 });
+    tracers.push({ x1: startX, y1: startY, x2: px, y2: py, life: 1.0, col: '#fef08a' });
     points.forEach(p => { if (Math.hypot(p.x - px, p.y - py) < p.r + 45) hitAny = true; });
   }
   playSound('gun'); vibrate(vib); screenShake = Math.max(screenShake, shake);
-  if (hitAny || Math.hypot(dummy.chest.x - tx, dummy.chest.y - ty) < 110) {
+  if (hitAny || Math.hypot(dummy.chest.x - tx, dummy.chest.y - ty) < 115) {
     const angle = Math.atan2(dummy.chest.y - startY, dummy.chest.x - startX);
     hitDummy(reward, dummy.chest.x, dummy.chest.y, Math.cos(angle) * knockback + (Math.random() - 0.5) * 10, Math.sin(angle) * knockback - 6, shake, 'gun', vib);
   }
@@ -746,8 +886,9 @@ function spawnBeesBalanced(x, y, reward) {
 }
 
 function spawnAnimal(type, icon, reward, speedX, speedY, vib) {
-  const bounds = getBoxBounds(), fromLeft = Math.random() < 0.5;
-  animals.push({ type, icon, x: fromLeft ? -60 : width + 60, y: dummy.chest.y + 15, vx: fromLeft ? speedX : -speedX, vy: speedY, dir: fromLeft ? 1 : -1, reward, vib, hasHit: false, tick: 0 });
+  const b = getBoxBounds(), fromLeft = Math.random() < 0.5;
+  const yPos = type === 'dragon' ? b.top + 60 : Math.min(b.bottom - 38, dummy.chest.y + 12);
+  animals.push({ type, icon, x: fromLeft ? -60 : width + 60, y: yPos, vx: fromLeft ? speedX : -speedX, vy: speedY, dir: fromLeft ? 1 : -1, reward, vib, hasHit: false, tick: 0 });
   playSound('explosion'); vibrate([60, 30, 60]);
 }
 
@@ -775,8 +916,9 @@ function spawnBlackHole(x, y, reward) {
   if (blackHoles.length >= 2) blackHoles.shift();
   blackHoles.push({ x, y, timer: 165, angle: 0, reward, tick: 0 });
   playSound('explosion'); vibrate([70, 40, 90]);
-}
+};
 function update() {
+  frameCount++;
   const bounds = getBoxBounds();
   if (slamCooldown > 0) slamCooldown--;
   if (hurtTimer > 0) hurtTimer--;
@@ -790,6 +932,28 @@ function update() {
     if (comboTimer <= 0) { combo = 0; document.getElementById('combo-box').style.display = 'none'; updateHUD(); }
   }
 
+  // Overdrive
+  if (overdriveTimer > 0) {
+    overdriveTimer--;
+    fever = (overdriveTimer / 600) * 100;
+    if (frameCount % 15 === 0) updateHUD();
+    if (overdriveTimer === 0) updateHUD();
+  } else if (fever > 0 && combo === 0 && frameCount % 10 === 0) {
+    fever = Math.max(0, fever - 0.5);
+    document.getElementById('fever-fill').style.width = `${Math.round(fever)}%`;
+  }
+
+  // Automatyczne Wieżyczki
+  TURRETS.forEach((tb, idx) => {
+    const lv = turretLevels[tb.id] || 0;
+    if (lv > 0 && frameCount % tb.rate === 0) {
+      const tx = bounds.left + 45 + idx * 54, ty = bounds.top + 28;
+      tracers.push({ x1: tx, y1: ty, x2: dummy.chest.x, y2: dummy.chest.y, life: 0.9, col: tb.color });
+      hitDummy(getTurretShotReward(tb), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 5, -2, 2, 'laser', null, true);
+    }
+  });
+
+  // Eventy
   if (goldRushTimer > 0) {
     goldRushTimer--;
     const banner = document.getElementById('event-banner');
@@ -797,37 +961,33 @@ function update() {
     banner.textContent = `🔥 ZŁOTA GORĄCZKA: x2 KASA! (${Math.ceil(goldRushTimer / 60)}s)`;
     if (goldRushTimer === 0) { banner.style.display = 'none'; updateHUD(); }
   }
-  if (berserkTimer > 0) {
-    berserkTimer--;
-    const banner = document.getElementById('event-banner');
-    banner.style.display = 'block';
-    banner.textContent = `⚡ SZAŁ BERSERKERA: x2 KASA! (${Math.ceil(berserkTimer / 60)}s)`;
-    if (berserkTimer === 0) { banner.style.display = 'none'; updateHUD(); }
-  }
-
   if (meteorShower) {
     for (let i = meteorShower.length - 1; i >= 0; i--) {
-      let m = meteorShower[i];
-      m.y += m.vy;
+      const m = meteorShower[i]; m.y += m.vy;
       if (m.y > bounds.bottom) meteorShower.splice(i, 1);
     }
     if (meteorShower.length === 0) meteorShower = null;
   }
+  if (goldDrone) {
+    goldDrone.x += goldDrone.vx;
+    goldDrone.y = bounds.top + 65 + Math.sin(frameCount * 0.1) * 24;
+    if (goldDrone.x < -80 || goldDrone.x > width + 80) goldDrone = null;
+  }
 
   eventCooldown--;
-  if (eventCooldown <= 0 && !pinata && !meteorShower && goldRushTimer <= 0 && berserkTimer <= 0) {
-    eventCooldown = 1200 + Math.floor(Math.random() * 600);
+  if (eventCooldown <= 0 && !pinata && !meteorShower && !goldDrone && goldRushTimer <= 0) {
+    eventCooldown = 1150 + Math.floor(Math.random() * 600);
     const r = Math.random();
-    if (r < 0.35) {
-      pinata = { x: bounds.left + 60, y: bounds.top + 80, vx: 4.2, vy: 2.8, hp: 5, timer: 600 };
-    } else if (r < 0.7) {
-      goldRushTimer = 900; playSound('quest'); updateHUD();
-    } else {
+    if (r < 0.28) pinata = { x: bounds.left + 60, y: bounds.top + 80, vx: 4.0, vy: 2.5, hp: 5, timer: 620 };
+    else if (r < 0.54) { goldRushTimer = 900; playSound('quest'); updateHUD(); }
+    else if (r < 0.78) {
       meteorShower = [];
-      for (let i = 0; i < 8; i++) {
-        meteorShower.push({ x: bounds.left + Math.random() * (bounds.right - bounds.left), y: bounds.top - 20 - Math.random() * 100, vy: 3 + Math.random() * 3 });
-      }
-      playSound('quest'); updateHUD();
+      for (let i = 0; i < 8; i++) meteorShower.push({ x: bounds.left + 30 + Math.random() * (bounds.right - bounds.left - 60), y: bounds.top - 20 - Math.random() * 140, vy: 2.8 + Math.random() * 2.5 });
+      playSound('quest');
+    } else {
+      const fromL = Math.random() < 0.5;
+      goldDrone = { x: fromL ? -40 : width + 40, y: bounds.top + 70, vx: fromL ? 5.2 : -5.2 };
+      playSound('quest');
     }
   }
 
@@ -840,28 +1000,29 @@ function update() {
 
   if (batSwing) { batSwing.timer--; if (batSwing.timer <= 0) batSwing = null; }
 
+  // Bronie ciągłe (przytrzymanie palca)
   if (pointer.down) {
     holdTick++;
     const w = getWeaponData(currentWeapon);
-    if (currentWeapon === 'chainsaw') {
-      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 90 && holdTick % 9 === 0) {
+    if (w.act === 'hold_saw') {
+      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 92 && holdTick % 9 === 0) {
         hitDummy(getWeaponReward(w), pointer.x, pointer.y, (Math.random() - 0.5) * 14, -7, 6, 'saw', w.vib);
       }
-    } else if (currentWeapon === 'laser') {
+    } else if (w.act === 'hold_laser') {
       if (holdTick % 7 === 0) {
         playSound('laser');
-        if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 105) {
-          hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -10, 9, 'laser', w.vib);
+        if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 110) {
+          hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 17, -9, 8, 'laser', w.vib);
         }
       }
-    } else if (currentWeapon === 'flamethrower') {
+    } else if (w.act === 'hold_flame') {
+      const isAcid = w.id === 'acid';
       for (let i = 0; i < 3; i++) {
-        const startX = width * 0.5, startY = height - 60;
-        const angle = Math.atan2(pointer.y - startY, pointer.x - startX) + (Math.random() - 0.5) * 0.3, spd = 11 + Math.random() * 7;
-        particles.push({ x: startX, y: startY, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, size: 7 + Math.random() * 8, color: Math.random() < 0.5 ? '#f97316' : '#facc15', life: 0.75 });
+        const sx = width * 0.5, sy = height - 60, ang = Math.atan2(pointer.y - sy, pointer.x - sx) + (Math.random() - 0.5) * 0.3, spd = 11 + Math.random() * 6;
+        particles.push({ x: sx, y: sy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, size: 7 + Math.random() * 7, color: isAcid ? '#84cc16' : (Math.random() < 0.5 ? '#f97316' : '#facc15'), life: 0.7 });
       }
       if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 115) {
-        burnTimer = 160;
+        burnTimer = 150;
         if (holdTick % 10 === 0) hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 8, -5, 5, 'explosion', w.vib);
       }
     }
@@ -869,31 +1030,29 @@ function update() {
 
   if (burnTimer > 0) {
     burnTimer--; burnTick++; hurtTimer = 10;
-    points.forEach(p => {
-      if (Math.random() < 0.3) particles.push({ x: p.x + (Math.random() - 0.5) * 14, y: p.y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 2, vy: -2.5 - Math.random() * 3, size: 5 + Math.random() * 5, color: '#ef4444', life: 0.55 });
-    });
-    if (burnTick % 24 === 0) addMoney(Math.round(getWeaponReward(getWeaponData('flamethrower')) * 0.3), dummy.head.x, dummy.head.y);
+    if (frameCount % 2 === 0) particles.push({ x: dummy.chest.x + (Math.random() - 0.5) * 28, y: dummy.chest.y + (Math.random() - 0.5) * 28, vx: (Math.random() - 0.5) * 2, vy: -2.5 - Math.random() * 3, size: 5 + Math.random() * 5, color: '#ef4444', life: 0.5 });
+    if (burnTick % 26 === 0) addMoney(Math.round(getBestUnlockedBaseReward() * 0.25), dummy.head.x, dummy.head.y);
   }
 
   for (let i = anvils.length - 1; i >= 0; i--) {
-    const av = anvils[i]; av.vy += 0.85; av.y += av.vy;
-    if (!av.hasHit && Math.hypot(av.x - dummy.head.x, av.y - dummy.head.y) < 60) {
-      av.hasHit = true; addShockwave(av.x, av.y, 120, '#cbd5e1');
-      hitDummy(av.reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 25, 22, 16, 'explosion', [130, 30, 60]);
+    const av = anvils[i]; av.vy += 0.88; av.y += av.vy;
+    if (!av.hasHit && Math.hypot(av.x - dummy.head.x, av.y - dummy.head.y) < 62) {
+      av.hasHit = true; addShockwave(av.x, av.y, 125, '#cbd5e1');
+      hitDummy(av.reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 24, 22, 16, 'explosion', [130, 30, 60]);
     }
     if (av.y > bounds.bottom - 22) {
       av.y = bounds.bottom - 22;
-      if (!av.hasHit) { av.hasHit = true; addShockwave(av.x, av.y, 110, '#cbd5e1'); hitDummy(av.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -14, 14, 'explosion', [130, 30, 60]); }
+      if (!av.hasHit) { av.hasHit = true; addShockwave(av.x, av.y, 115, '#cbd5e1'); hitDummy(av.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -14, 14, 'explosion', [130, 30, 60]); }
       av.life--; if (av.life <= 0) anvils.splice(i, 1);
     }
   }
 
   for (let i = rockets.length - 1; i >= 0; i--) {
     const rk = rockets[i]; rk.x += rk.vx; rk.y += rk.vy;
-    particles.push({ x: rk.x, y: rk.y, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, size: 6, color: '#f97316', life: 0.5 });
-    const outBounds = rk.x < bounds.left || rk.x > bounds.right || rk.y < bounds.top || rk.y > bounds.bottom;
-    if (Math.hypot(rk.x - dummy.chest.x, rk.y - dummy.chest.y) < 65 || outBounds) {
-      addShockwave(rk.x, rk.y, 180, '#f97316'); spawnStuffing(rk.x, rk.y, 28, 14, '#f97316');
+    particles.push({ x: rk.x, y: rk.y, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, size: 5.5, color: '#f97316', life: 0.45 });
+    const out = rk.x < bounds.left || rk.x > bounds.right || rk.y < bounds.top || rk.y > bounds.bottom;
+    if (Math.hypot(rk.x - dummy.chest.x, rk.y - dummy.chest.y) < 65 || out) {
+      addShockwave(rk.x, rk.y, 185, '#f97316'); spawnStuffing(rk.x, rk.y, 26, 14, '#f97316');
       hitDummy(rk.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 40, -26, 22, 'explosion', rk.vib);
       rockets.splice(i, 1);
     }
@@ -930,8 +1089,13 @@ function update() {
 
   for (let i = animals.length - 1; i >= 0; i--) {
     const a = animals[i]; a.x += a.vx; a.y += a.vy; a.tick++;
-    if (a.type === 'shark') a.vy += 0.25;
-    if (!a.hasHit && Math.hypot(a.x - dummy.chest.x, a.y - dummy.chest.y) < 90) {
+    if (a.type === 'dragon') {
+      if (a.tick % 2 === 0) particles.push({ x: a.x, y: a.y + 15, vx: a.vx * 0.25 + (Math.random() - 0.5) * 4, vy: 7 + Math.random() * 4, size: 8, color: '#f97316', life: 0.65 });
+      if (!a.hasHit && Math.abs(a.x - dummy.chest.x) < 88) {
+        a.hasHit = true; burnTimer = 160; addShockwave(dummy.chest.x, dummy.chest.y, 155, '#ef4444');
+        hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 30, -20, 19, 'explosion', a.vib);
+      }
+    } else if (!a.hasHit && Math.hypot(a.x - dummy.chest.x, a.y - dummy.chest.y) < 92) {
       a.hasHit = true; addShockwave(dummy.chest.x, dummy.chest.y, 150, '#fff');
       hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 34, -20, 20, 'explosion', a.vib);
     }
@@ -972,21 +1136,22 @@ function update() {
     });
   }
 
+  for (let i = swipeTrail.length - 1; i >= 0; i--) { swipeTrail[i].life -= 0.1; if (swipeTrail[i].life <= 0) swipeTrail.splice(i, 1); }
   for (let i = shockwaves.length - 1; i >= 0; i--) { const sw = shockwaves[i]; sw.r += (sw.maxR - sw.r) * 0.22; sw.life -= 0.06; if (sw.life <= 0) shockwaves.splice(i, 1); }
   for (let i = beams.length - 1; i >= 0; i--) { beams[i].life -= 0.05; if (beams[i].life <= 0) beams.splice(i, 1); }
   for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i]; pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.18; pt.life -= 0.026;
+    const pt = particles[i]; pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.18; pt.life -= 0.028;
     if (pt.y > bounds.bottom) { pt.y = bounds.bottom; pt.vy *= -0.3; pt.vx *= 0.7; }
     if (pt.life <= 0) particles.splice(i, 1);
   }
-  for (let i = floatingTexts.length - 1; i >= 0; i--) { const ft = floatingTexts[i]; ft.y += ft.vy; ft.life -= 0.022; if (ft.life <= 0) floatingTexts.splice(i, 1); }
-  for (let i = tracers.length - 1; i >= 0; i--) { tracers[i].life -= 0.15; if (tracers[i].life <= 0) tracers.splice(i, 1); }
+  for (let i = floatingTexts.length - 1; i >= 0; i--) { const ft = floatingTexts[i]; ft.y += ft.vy; ft.life -= 0.024; if (ft.life <= 0) floatingTexts.splice(i, 1); }
+  for (let i = tracers.length - 1; i >= 0; i--) { tracers[i].life -= 0.14; if (tracers[i].life <= 0) tracers.splice(i, 1); }
   for (let i = lightnings.length - 1; i >= 0; i--) { lightnings[i].life -= 0.08; if (lightnings[i].life <= 0) lightnings.splice(i, 1); }
 }
 
 function drawArena() {
-  const b = getBoxBounds(), theme = THEMES.find(t => t.id === currentTheme) || THEMES[0];
-  const grad = ctx.createRadialGradient(width * 0.5, height * 0.45, 30, width * 0.5, height * 0.5, Math.max(width, height) * 0.7);
+  const b = getBoxBounds(), theme = THEMES.find(th => th.id === currentTheme) || THEMES[0];
+  const grad = ctx.createRadialGradient(width * 0.5, height * 0.45, 30, width * 0.5, height * 0.5, Math.max(width, height) * 0.72);
   grad.addColorStop(0, theme.c1); grad.addColorStop(1, theme.c2);
   ctx.fillStyle = grad; ctx.fillRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
   ctx.strokeStyle = theme.line; ctx.lineWidth = 2.5;
@@ -998,8 +1163,18 @@ function drawArena() {
   ctx.moveTo(b.left, b.bottom); ctx.lineTo(b.left + padX, b.bottom - padY);
   ctx.moveTo(b.right, b.bottom); ctx.lineTo(b.right - padX, b.bottom - padY);
   ctx.stroke();
-  ctx.strokeStyle = goldRushTimer > 0 || berserkTimer > 0 ? '#facc15' : theme.border;
-  ctx.lineWidth = goldRushTimer > 0 || berserkTimer > 0 ? 6 : 4;
+
+  // Rysowanie posiadanych Wieżyczek w górnym rogu areny
+  TURRETS.forEach((tb, idx) => {
+    if ((turretLevels[tb.id] || 0) > 0) {
+      const tx = b.left + 45 + idx * 54, ty = b.top + 28 + Math.sin(frameCount * 0.08 + idx) * 3;
+      ctx.font = '26px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(tb.icon, tx, ty);
+    }
+  });
+
+  ctx.strokeStyle = overdriveTimer > 0 ? '#f43f5e' : (goldRushTimer > 0 ? '#facc15' : theme.border);
+  ctx.lineWidth = (overdriveTimer > 0 || goldRushTimer > 0) ? 6 : 4;
   ctx.strokeRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
 }
 
@@ -1009,18 +1184,15 @@ function drawDummy() {
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.beginPath(); ctx.ellipse(dummy.chest.x, b.bottom - 4, 38, 8, 0, 0, Math.PI * 2); ctx.fill();
 
-  bloodSplats.forEach(bs => {
-    ctx.fillStyle = `rgba(185, 28, 28, ${bs.alpha})`;
-    ctx.beginPath(); ctx.arc(bs.x, bs.y, bs.size, 0, Math.PI * 2); ctx.fill();
-  });
-
   sticks.forEach(s => {
     if (!s.visible) return;
     let col = skin.headCol;
     if (s.role === 'shirt') col = skin.shirtCol;
     if (s.role === 'pants') col = skin.pantsCol;
     if (shockTimer > 0 && Math.random() < 0.5) col = '#7dd3fc';
-    ctx.strokeStyle = col; ctx.lineWidth = s.thickness; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = s.thickness + 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(s.p0.x, s.p0.y); ctx.lineTo(s.p1.x, s.p1.y); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = s.thickness;
     ctx.beginPath(); ctx.moveTo(s.p0.x, s.p0.y); ctx.lineTo(s.p1.x, s.p1.y); ctx.stroke();
   });
 
@@ -1029,36 +1201,57 @@ function drawDummy() {
     ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
   });
 
+  // Ślady walki przyczepione do ciała kukły
+  if (settings.blood) {
+    bloodSplats.forEach(bs => {
+      const host = points[bs.idx] || dummy.chest;
+      ctx.fillStyle = `rgba(185, 28, 28, ${bs.alpha})`;
+      ctx.beginPath(); ctx.arc(host.x + bs.ox, host.y + bs.oy, bs.size, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+
   const h = dummy.head, angle = Math.atan2(h.y - dummy.neck.y, h.x - dummy.neck.x) + Math.PI * 0.5;
   ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(angle);
   if (skin.id === 'cosmic' || skin.id === 'god') { ctx.shadowColor = '#fde047'; ctx.shadowBlur = 18; }
-  ctx.fillStyle = (hurtTimer > 38) ? '#fff' : (shockTimer > 0 && Math.random() < 0.5 ? '#bae6fd' : skin.headCol);
+  ctx.fillStyle = (hurtTimer > 36) ? '#fff' : (shockTimer > 0 && Math.random() < 0.5 ? '#bae6fd' : skin.headCol);
   ctx.beginPath(); ctx.arc(0, 0, h.r, 0, Math.PI * 2); ctx.fill();
   ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 3; ctx.stroke();
 
-  if (skin.id === 'ninja') { ctx.fillStyle = '#dc2626'; ctx.fillRect(-25, -15, 50, 7); }
-  else if (skin.id === 'knight') { ctx.fillStyle = '#475569'; ctx.fillRect(-20, -26, 40, 10); }
+  if (skin.id === 'ninja') { ctx.fillStyle = '#dc2626'; ctx.fillRect(-24, -14, 48, 7); }
+  else if (skin.id === 'soldier') { ctx.fillStyle = '#365314'; ctx.beginPath(); ctx.arc(0, -6, 25, Math.PI, 0); ctx.fill(); }
+  else if (skin.id === 'knight') { ctx.fillStyle = '#475569'; ctx.fillRect(-20, -25, 40, 10); }
   else if (skin.id === 'robot') { ctx.fillStyle = '#06b6d4'; ctx.fillRect(-15, -7, 30, 7); }
-  else if (skin.id === 'gold' || skin.id === 'god') { ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -24); }
+  else if (skin.id === 'demon') { ctx.fillStyle = '#18181b'; ctx.beginPath(); ctx.moveTo(-15, -18); ctx.lineTo(-23, -33); ctx.lineTo(-5, -22); ctx.fill(); ctx.beginPath(); ctx.moveTo(15, -18); ctx.lineTo(23, -33); ctx.lineTo(5, -22); ctx.fill(); }
+  else if (skin.id === 'gold' || skin.id === 'god') { ctx.font = '21px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -23); }
 
   ctx.fillStyle = '#18181b'; ctx.strokeStyle = '#18181b'; ctx.lineWidth = 2.5;
   if (hurtTimer > 0 || shockTimer > 0) {
     const drawX = (ox, oy) => { ctx.beginPath(); ctx.moveTo(ox - 5, oy - 5); ctx.lineTo(ox + 5, oy + 5); ctx.moveTo(ox + 5, oy - 5); ctx.lineTo(ox - 5, oy + 5); ctx.stroke(); };
     drawX(-8, -3); drawX(8, -3);
+    ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.arc(0, 10, 6, 0, Math.PI * 2); ctx.fill();
   } else if (skin.id !== 'robot') {
-    ctx.beginPath(); ctx.arc(-8, -3, 4, 0, Math.PI * 2); ctx.arc(8, -3, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 5, 9, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-8, -3, 3.8, 0, Math.PI * 2); ctx.arc(8, -3, 3.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 5, 8.5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
   }
   ctx.restore();
 
   if (frozenTimer > 0) {
     ctx.save(); ctx.fillStyle = 'rgba(103, 232, 249, 0.42)'; ctx.strokeStyle = '#cffafe'; ctx.lineWidth = 3;
-    ctx.fillRect(dummy.chest.x - 52, dummy.head.y - 35, 104, 155); ctx.strokeRect(dummy.chest.x - 52, dummy.head.y - 35, 104, 155);
+    ctx.fillRect(dummy.chest.x - 50, dummy.head.y - 34, 100, 150); ctx.strokeRect(dummy.chest.x - 50, dummy.head.y - 34, 100, 150);
     ctx.restore();
   }
 }
 
 function drawEffects() {
+  // Smuga za palcem (Swipe Trail)
+  if (swipeTrail.length > 1) {
+    for (let i = 1; i < swipeTrail.length; i++) {
+      const a = swipeTrail[i - 1], b = swipeTrail[i];
+      ctx.strokeStyle = `rgba(250, 204, 21, ${b.life * 0.65})`;
+      ctx.lineWidth = b.life * 8; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+  }
   beams.forEach(bm => {
     ctx.save(); ctx.globalAlpha = bm.life;
     ctx.fillStyle = 'rgba(56, 189, 248, 0.45)'; ctx.fillRect(bm.x - 45, 0, 90, height);
@@ -1066,13 +1259,15 @@ function drawEffects() {
   });
   if (pinata) {
     ctx.save(); ctx.translate(pinata.x, pinata.y); ctx.font = '46px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🪅', 0, 0); ctx.font = '800 11px sans-serif'; ctx.fillStyle = '#fde047'; ctx.fillText(`KLIKNIJ! (${pinata.hp})`, 0, -32); ctx.restore();
+    ctx.fillText('🪅', 0, 0); ctx.font = '900 11px sans-serif'; ctx.fillStyle = '#fde047'; ctx.fillText(`TAP! (${pinata.hp})`, 0, -32); ctx.restore();
+  }
+  if (goldDrone) {
+    ctx.save(); ctx.translate(goldDrone.x, goldDrone.y); ctx.font = '44px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🚁', 0, 0); ctx.font = '900 11px sans-serif'; ctx.fillStyle = '#4ade80'; ctx.fillText('ZŁAP MNIE!', 0, -30); ctx.restore();
   }
   if (meteorShower) {
-    meteorShower.forEach(m => {
-      ctx.font = '32px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('💰', m.x, m.y);
-    });
+    ctx.font = '32px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    meteorShower.forEach(m => ctx.fillText('💰', m.x, m.y));
   }
   shockwaves.forEach(sw => {
     ctx.save(); ctx.globalAlpha = Math.max(0, sw.life); ctx.strokeStyle = sw.color; ctx.lineWidth = 4;
@@ -1093,19 +1288,31 @@ function drawEffects() {
     ctx.fillStyle = '#fff'; ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('100T', 0, 5); ctx.restore();
   });
   ctx.font = '30px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  rockets.forEach(rk => { ctx.fillText('🚀', rk.x, rk.y); });
+  rockets.forEach(rk => ctx.fillText('🚀', rk.x, rk.y));
+  const curW = getWeaponData(currentWeapon);
+  if (pointer.down && curW.act === 'hold_laser') {
+    const sx = width * 0.5, sy = height - 58;
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)'; ctx.lineWidth = 16; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
+  }
+  if (pointer.down && curW.act === 'hold_saw') {
+    ctx.font = '38px sans-serif'; ctx.fillText('🪚', pointer.x + (Math.random() - 0.5) * 6, pointer.y + (Math.random() - 0.5) * 6);
+  }
   if (batSwing) { ctx.font = '46px sans-serif'; ctx.fillText(batSwing.icon || '🏏', batSwing.x, batSwing.y); }
   tracers.forEach(t => {
-    ctx.strokeStyle = `rgba(254, 240, 138, ${t.life})`; ctx.lineWidth = 3;
+    ctx.strokeStyle = t.col || '#fef08a'; ctx.globalAlpha = Math.max(0, t.life); ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(t.x1, t.y1); ctx.lineTo(t.x2, t.y2); ctx.stroke();
   });
+  ctx.globalAlpha = 1.0;
   lightnings.forEach(l => {
     ctx.strokeStyle = `rgba(125, 211, 252, ${l.life})`; ctx.lineWidth = 8;
     ctx.beginPath(); l.segments.forEach(s => { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); }); ctx.stroke();
     ctx.strokeStyle = `rgba(255, 255, 255, ${l.life})`; ctx.lineWidth = 3; ctx.stroke();
   });
-  ctx.font = '22px sans-serif'; bees.forEach(b => { ctx.fillText('🐝', b.x, b.y); });
-  ctx.font = '64px sans-serif';
+  ctx.font = '22px sans-serif'; bees.forEach(b => ctx.fillText('🐝', b.x, b.y));
+  ctx.font = '62px sans-serif';
   animals.forEach(a => { ctx.save(); ctx.translate(a.x, a.y); if (a.dir > 0) ctx.scale(-1, 1); ctx.fillText(a.icon, 0, 0); ctx.restore(); });
   particles.forEach(pt => {
     ctx.globalAlpha = Math.max(0, pt.life); ctx.fillStyle = pt.color;
@@ -1114,7 +1321,7 @@ function drawEffects() {
   ctx.globalAlpha = 1.0;
   floatingTexts.forEach(ft => {
     ctx.globalAlpha = Math.max(0, ft.life);
-    ctx.font = `900 ${Math.round(18 * ft.scale)}px 'Segoe UI', sans-serif`; ctx.textAlign = 'center';
+    ctx.font = `900 ${Math.round(17 * ft.scale)}px 'Trebuchet MS', sans-serif`; ctx.textAlign = 'center';
     ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.strokeText(ft.text, ft.x, ft.y);
     ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
   });
@@ -1123,12 +1330,14 @@ function drawEffects() {
 }
 
 function loop() {
-  update();
-  ctx.save();
-  if (screenShake > 0.5) ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-  ctx.clearRect(-20, -20, width + 40, height + 40);
-  drawArena(); drawDummy(); drawEffects();
-  ctx.restore();
+  try {
+    update();
+    ctx.save();
+    if (screenShake > 0.5) ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    ctx.clearRect(-20, -20, width + 40, height + 40);
+    drawArena(); drawDummy(); drawEffects();
+    ctx.restore();
+  } catch (e) {}
   requestAnimationFrame(loop);
 }
 
