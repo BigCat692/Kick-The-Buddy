@@ -3,672 +3,642 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kick the Dummy 2D</title>
+<title>Kick the Dummy 2D - Infinite Edition</title>
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-  }
-  body {
-    background: #1a1612;
-    color: #fff;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-  }
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Górny pasek UI */
-  #top-bar {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 20;
-    pointer-events: none;
-  }
-  .money-box {
-    background: linear-gradient(135deg, #1b5e20, #2e7d32);
-    border: 2px solid #66bb6a;
-    padding: 8px 16px;
-    border-radius: 14px;
-    font-size: 20px;
-    font-weight: 900;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .top-actions {
-    display: flex;
-    gap: 8px;
-    pointer-events: auto;
-  }
-  .ui-btn {
-    background: linear-gradient(135deg, #2c2520, #1f1a17);
-    border: 2px solid #6d5848;
-    color: #f5ebe6;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
-    transition: transform 0.08s;
-  }
-  .ui-btn:active {
-    transform: scale(0.92);
-  }
-  .btn-shop {
-    background: linear-gradient(135deg, #e65100, #ff8f00);
-    border-color: #ffd54f;
-    color: #fff;
-  }
-
-  /* Dolny pasek szybkiego wyboru broni */
-  #bottom-bar {
-    position: absolute;
-    bottom: 12px;
-    left: 10px;
-    right: 10px;
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 6px 4px;
-    z-index: 20;
-    scrollbar-width: none;
-  }
-  #bottom-bar::-webkit-scrollbar {
-    display: none;
-  }
-  .weapon-slot {
-    flex: 0 0 auto;
-    background: rgba(32, 26, 22, 0.92);
-    border: 2px solid #5c4b3e;
-    border-radius: 12px;
-    padding: 8px 12px;
-    color: #eee;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-    transition: transform 0.1s, border-color 0.15s;
-  }
-  .weapon-slot:active {
-    transform: scale(0.93);
-  }
-  .weapon-slot.active {
-    background: linear-gradient(135deg, #c62828, #e53935);
-    border-color: #ff8a80;
-    box-shadow: 0 0 12px rgba(229, 57, 53, 0.7);
-  }
-  .weapon-slot .icon {
-    font-size: 18px;
-  }
-
-  /* Modal Sklepu */
-  #shop-modal {
-    position: absolute;
-    inset: 0;
-    background: rgba(10, 8, 6, 0.85);
-    backdrop-filter: blur(4px);
-    z-index: 50;
-    display: none;
-    flex-direction: column;
-    padding: 16px;
-  }
-  #shop-modal.open {
-    display: flex;
-  }
-  .shop-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #4a3c32;
-  }
-  .shop-title {
-    font-size: 22px;
-    font-weight: 900;
-    color: #ffd54f;
-  }
-  .shop-tabs {
-    display: flex;
-    gap: 6px;
-    margin: 12px 0;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-  .tab-btn {
-    flex: 1;
-    white-space: nowrap;
-    background: #2b231d;
-    border: 1px solid #5c4b3e;
-    color: #ccc;
-    padding: 9px 10px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .tab-btn.active {
-    background: #ff8f00;
-    color: #111;
-    border-color: #ffe082;
-  }
-  .shop-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-right: 4px;
-  }
-  .shop-item {
-    background: #251f1a;
-    border: 2px solid #4a3c32;
-    border-radius: 14px;
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-  .shop-item.unlocked {
-    border-color: #4caf50;
-  }
-  .item-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .item-icon {
-    font-size: 30px;
-    width: 46px;
-    height: 46px;
-    background: #1a1512;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .item-name {
-    font-size: 15px;
-    font-weight: 800;
-    color: #fff;
-  }
-  .item-desc {
-    font-size: 12px;
-    color: #b0a095;
-    margin-top: 2px;
-  }
-  .item-reward {
-    font-size: 12px;
-    color: #81c784;
-    font-weight: 700;
-    margin-top: 2px;
-  }
-  .buy-btn {
-    background: linear-gradient(135deg, #2e7d32, #43a047);
-    border: 1px solid #81c784;
-    color: #fff;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 13px;
-    min-width: 95px;
-    text-align: center;
-    cursor: pointer;
-  }
-  .buy-btn.locked-poor {
-    background: #3e352f;
-    border-color: #5c4e46;
-    color: #888;
-  }
-  .buy-btn.select-mode {
-    background: linear-gradient(135deg, #1565c0, #1e88e5);
-    border-color: #64b5f6;
-  }
-  .buy-btn.equipped {
-    background: #c62828;
-    border-color: #ff8a80;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
+  html, body { width: 100%; height: 100%; background: #0d0b0a; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+  #app-root { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; }
+  body.force-landscape #app-root { width: 100vh; height: 100vw; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); }
+  canvas { display: block; width: 100%; height: 100%; }
+  #top-bar { position: absolute; top: 8px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; z-index: 20; pointer-events: none; }
+  .hud-left, .hud-right { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
+  .money-box { background: linear-gradient(135deg, #1b5e20, #2e7d32); border: 2px solid #81c784; padding: 6px 14px; border-radius: 12px; font-size: 18px; font-weight: 900; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .mult-badge { background: linear-gradient(135deg, #6a1b9a, #8e24aa); border: 1px solid #e1bee7; padding: 5px 10px; border-radius: 10px; font-size: 12px; font-weight: 800; color: #fff; white-space: nowrap; }
+  #quest-box { pointer-events: auto; background: rgba(24, 20, 18, 0.9); border: 1.5px solid #ffb300; border-radius: 12px; padding: 5px 12px; max-width: 340px; flex: 1; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 3px 10px rgba(0,0,0,0.5); }
+  .quest-top { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #ffe082; }
+  .quest-bar-bg { width: 100%; height: 6px; background: #2c221e; border-radius: 4px; overflow: hidden; }
+  .quest-bar-fill { height: 100%; background: linear-gradient(90deg, #ff8f00, #ffff00); width: 0%; transition: width 0.15s; }
+  .ui-btn { background: linear-gradient(135deg, #2c2520, #1c1714); border: 2px solid #6d5848; color: #f5ebe6; padding: 7px 11px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.5); white-space: nowrap; }
+  .ui-btn:active { transform: scale(0.92); }
+  .btn-shop { background: linear-gradient(135deg, #e65100, #ff8f00); border-color: #ffd54f; color: #fff; }
+  .btn-upgrade-hud { background: linear-gradient(135deg, #1565c0, #1e88e5); border-color: #90caf9; color: #fff; }
+  #combo-box { position: absolute; top: 62px; left: 16px; z-index: 15; pointer-events: none; font-weight: 900; text-shadow: 0 3px 6px rgba(0,0,0,0.8); transition: transform 0.08s; display: none; }
+  .combo-num { font-size: 28px; color: #ffea00; }
+  .combo-sub { font-size: 12px; color: #ff9100; }
+  #event-banner { position: absolute; top: 60px; right: 16px; z-index: 15; pointer-events: none; background: linear-gradient(135deg, #f57f17, #ffca28); color: #111; font-weight: 900; font-size: 13px; padding: 6px 12px; border-radius: 10px; box-shadow: 0 0 15px rgba(255, 214, 0, 0.8); display: none; }
+  #portrait-hint { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); z-index: 30; background: rgba(21, 101, 192, 0.95); border: 1.5px solid #90caf9; color: #fff; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; display: none; align-items: center; gap: 8px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
+  #bottom-bar-wrap { position: absolute; bottom: 8px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; z-index: 20; pointer-events: none; }
+  #bottom-bar { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; pointer-events: auto; scrollbar-width: none; }
+  #bottom-bar::-webkit-scrollbar { display: none; }
+  .weapon-slot { flex: 0 0 auto; background: rgba(28, 23, 20, 0.92); border: 2px solid #5c4b3e; border-radius: 10px; padding: 6px 10px; color: #eee; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; cursor: pointer; }
+  .weapon-slot.active { background: linear-gradient(135deg, #c62828, #e53935); border-color: #ff8a80; box-shadow: 0 0 10px rgba(229, 57, 53, 0.7); }
+  .weapon-slot .lv-tag { background: rgba(0,0,0,0.45); padding: 2px 5px; border-radius: 6px; font-size: 10px; color: #ffd54f; }
+  #quick-upgrade-btn { pointer-events: auto; }
+  .modal-overlay { position: absolute; inset: 0; background: rgba(10, 8, 6, 0.88); backdrop-filter: blur(5px); z-index: 50; display: none; flex-direction: column; padding: 12px 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 2px solid #4a3c32; }
+  .modal-title { font-size: 19px; font-weight: 900; color: #ffd54f; }
+  .shop-tabs { display: flex; gap: 6px; margin: 8px 0; overflow-x: auto; padding-bottom: 2px; }
+  .tab-btn { flex: 1; white-space: nowrap; background: #261f1a; border: 1px solid #5c4b3e; color: #ccc; padding: 7px 10px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer; }
+  .tab-btn.active { background: #ff8f00; color: #111; border-color: #ffe082; }
+  .shop-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; padding-right: 4px; align-content: start; }
+  .shop-item { background: #221c18; border: 2px solid #4a3c32; border-radius: 12px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .shop-item.unlocked { border-color: #4caf50; }
+  .item-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .item-icon { font-size: 26px; width: 42px; height: 42px; flex-shrink: 0; background: #16120f; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .item-name { font-size: 13px; font-weight: 800; color: #fff; }
+  .item-desc { font-size: 11px; color: #b0a095; }
+  .item-reward { font-size: 11px; color: #81c784; font-weight: 700; }
+  .item-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .buy-btn { background: linear-gradient(135deg, #2e7d32, #43a047); border: 1px solid #81c784; color: #fff; padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 11px; min-width: 88px; text-align: center; cursor: pointer; }
+  .buy-btn.locked-poor { background: #38302b; border-color: #54473f; color: #888; }
+  .buy-btn.select-mode { background: linear-gradient(135deg, #1565c0, #1e88e5); border-color: #64b5f6; }
+  .buy-btn.equipped { background: #c62828; border-color: #ff8a80; }
+  .buy-btn.upg-btn { background: linear-gradient(135deg, #6a1b9a, #8e24aa); border-color: #ce93d8; }
+  .settings-body { max-width: 420px; margin: 16px auto; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .setting-row { background: #241e1a; border: 1px solid #4a3c32; padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; }
+  .toggle-btn { padding: 7px 16px; border-radius: 8px; font-weight: 900; border: none; cursor: pointer; }
+  .toggle-on { background: #43a047; color: #fff; }
+  .toggle-off { background: #555; color: #ccc; }
 </style>
 </head>
 <body>
-
-<div id="top-bar">
-  <div class="money-box">
-    <span>💵</span>
-    <span id="money-display">$0</span>
+<div id="app-root">
+  <div id="top-bar">
+    <div class="hud-left">
+      <div class="money-box"><span>💵</span><span id="money-display">$0</span></div>
+      <div class="mult-badge" id="mult-display">⚡ x1.0</div>
+    </div>
+    <div id="quest-box">
+      <div class="quest-top"><span id="quest-text">🎯 Misja: Uderz kukłę 15 razy</span><span id="quest-reward">+$50</span></div>
+      <div class="quest-bar-bg"><div class="quest-bar-fill" id="quest-fill"></div></div>
+    </div>
+    <div class="hud-right">
+      <button class="ui-btn btn-shop" onclick="toggleShop()">🛒 SKLEP</button>
+      <button class="ui-btn" onclick="resetDummy()">🔄</button>
+      <button class="ui-btn" onclick="toggleSettings()">⚙️</button>
+    </div>
   </div>
-  <div class="top-actions">
-    <button class="ui-btn btn-shop" onclick="toggleShop()">🛒 SKLEP</button>
-    <button class="ui-btn" onclick="resetDummy()">🔄 Reset</button>
+  <div id="portrait-hint">
+    <span>📱 Grasz pionowo?</span>
+    <button class="ui-btn btn-upgrade-hud" style="padding:4px 8px;font-size:11px;" onclick="toggleForceLandscape()">🔄 Obróć o 90°</button>
+    <span onclick="document.getElementById('portrait-hint').style.display='none'" style="cursor:pointer;padding:0 4px;">✖</span>
+  </div>
+  <div id="combo-box"><div class="combo-num" id="combo-num">COMBO x2</div><div class="combo-sub" id="combo-sub">Bonus kasy +10%</div></div>
+  <div id="event-banner">🔥 GORĄCZKA ZŁOTA: x2 KASA! (15s)</div>
+  <canvas id="game"></canvas>
+  <div id="bottom-bar-wrap">
+    <div id="bottom-bar"></div>
+    <button id="quick-upgrade-btn" class="ui-btn btn-upgrade-hud" onclick="upgradeCurrentWeapon()">⬆️ Lv.1 ($15)</button>
+  </div>
+  <div id="shop-modal" class="modal-overlay">
+    <div class="modal-header">
+      <div class="modal-title">🛒 ARSENAŁ & PROGRESJA</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span id="shop-money" style="font-weight:900;color:#81c784;font-size:16px;">$0</span>
+        <button class="ui-btn" onclick="toggleShop()">✖ Zamknij</button>
+      </div>
+    </div>
+    <div class="shop-tabs">
+      <button class="tab-btn active" onclick="switchCategory('melee', this)">🏏 Biała (4)</button>
+      <button class="tab-btn" onclick="switchCategory('guns', this)">🔫 Palna (4)</button>
+      <button class="tab-btn" onclick="switchCategory('animals', this)">🐉 Zwierzęta (4)</button>
+      <button class="tab-btn" onclick="switchCategory('elements', this)">⚡ Żywioły (4)</button>
+      <button class="tab-btn" onclick="switchCategory('skins', this)">🎭 Skórki</button>
+      <button class="tab-btn" onclick="switchCategory('prestige', this)">🌟 Prestige</button>
+    </div>
+    <div class="shop-list" id="shop-list"></div>
+  </div>
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ USTAWIENIA GRY</div>
+      <button class="ui-btn" onclick="toggleSettings()">✖ Zamknij</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-row"><span>🔊 Efekty Dźwiękowe</span><button id="btn-sound" class="toggle-btn toggle-on" onclick="toggleSetting('sound')">ON</button></div>
+      <div class="setting-row"><span>📳 Wibracje przy uderzeniu</span><button id="btn-vib" class="toggle-btn toggle-on" onclick="toggleSetting('vibration')">ON</button></div>
+      <div class="setting-row"><span>🔄 Wymuś obrót poziomy (90°)</span><button id="btn-rot" class="toggle-btn toggle-off" onclick="toggleForceLandscape()">OFF</button></div>
+      <div class="setting-row" style="border-color:#b71c1c;"><span>🗑️ Twardy Reset Postępu</span><button class="ui-btn" style="background:#c62828;border-color:#ef5350;" onclick="hardReset()">Resetuj</button></div>
+    </div>
   </div>
 </div>
-
-<canvas id="game"></canvas>
-
-<div id="bottom-bar"></div>
-
-<!-- OKNO SKLEPU -->
-<div id="shop-modal">
-  <div class="shop-header">
-    <div class="shop-title">🛒 ARSENAŁ</div>
-    <button class="ui-btn" onclick="toggleShop()">✖ Zamknij</button>
-  </div>
-  <div class="shop-tabs">
-    <button class="tab-btn active" onclick="switchCategory('melee', this)">🏏 Biała</button>
-    <button class="tab-btn" onclick="switchCategory('guns', this)">🔫 Palna</button>
-    <button class="tab-btn" onclick="switchCategory('animals', this)">🦈 Zwierzęta</button>
-    <button class="tab-btn" onclick="switchCategory('elements', this)">⚡ Żywioły</button>
-  </div>
-  <div class="shop-list" id="shop-list"></div>
-</div>
-
 <script>
+const WEAPONS = [
+  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, upgBase: 15, reward: 2, desc: 'Łap i ciskaj kukłą o ściany pudełka' },
+  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 25, upgBase: 35, reward: 8, desc: 'Szybkie machnięcia i mocny odrzut' },
+  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 120, upgBase: 140, reward: 24, desc: 'Przytrzymaj na kukle, by ciąć bez przerwy' },
+  { id: 'anvil', cat: 'melee', name: 'Kowadło 100T', icon: '⚓', cost: 650, upgBase: 700, reward: 190, desc: 'Zrzuca z sufitu ciężkie żelazne kowadło' },
+  { id: 'pistol', cat: 'guns', name: 'Pistolet', icon: '🔫', cost: 2800, upgBase: 3000, reward: 650, desc: 'Celny ostrzał z odrzutem' },
+  { id: 'shotgun', cat: 'guns', name: 'Strzelba', icon: '💥', cost: 12000, upgBase: 13000, reward: 2600, desc: 'Chmura śrutu i potężny wstrząs' },
+  { id: 'laser', cat: 'guns', name: 'Minigun Laser', icon: '☄️', cost: 55000, upgBase: 60000, reward: 4200, desc: 'Ciągła wiązka plazmy przy przytrzymaniu' },
+  { id: 'rpg', cat: 'guns', name: 'Wyrzutnia RPG', icon: '🚀', cost: 250000, upgBase: 270000, reward: 95000, desc: 'Wystrzeliwuje rakietę z falą uderzeniową' },
+  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 1100000, upgBase: 1200000, reward: 85000, desc: '1 aktywny rój żądlący kukłę 5x na sekundę' },
+  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 5000000, upgBase: 5500000, reward: 1800000, desc: 'Wyskakuje z boku i taranuje szczękami' },
+  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 24000000, upgBase: 26000000, reward: 8500000, desc: 'Potężna szarża przez całą długość ekranu' },
+  { id: 'dragon', cat: 'animals', name: 'Smok Wawelski', icon: '🐉', cost: 120000000, upgBase: 130000000, reward: 42000000, desc: 'Przelatuje nad polem i zieje kulami ognia' },
+  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 600000000, upgBase: 650000000, reward: 75000000, desc: 'Strumień ognia podpalający kukłę' },
+  { id: 'freeze', cat: 'elements', name: 'Mroźna Zamieć', icon: '❄️', cost: 3000000000, upgBase: 3200000000, reward: 950000000, desc: 'Zamraża w lód – rozbicie daje x3 KASY!' },
+  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 15000000000, upgBase: 16000000000, reward: 5200000000, desc: 'Potężne uderzenie błyskawicy z nieba' },
+  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 80000000000, upgBase: 85000000000, reward: 28000000000, desc: 'Wciąga kukłę w wir grawitacyjny i eksploduje' }
+];
+const SKINS = [
+  { id: 'classic', name: 'Klasyczny Buddy', icon: '🧸', cost: 0, mult: 1.0, headCol: '#e0b382', shirtCol: '#3973ac', pantsCol: '#2c3e50', desc: 'Standardowy manekin treningowy (x1.0 kasy)' },
+  { id: 'zombie', name: 'Zombie Buddy', icon: '🧟', cost: 7500, mult: 1.5, headCol: '#7cb342', shirtCol: '#4e342e', pantsCol: '#263238', desc: '+50% do całej zdobywanej kasy (x1.5)' },
+  { id: 'robot', name: 'Cyber-Bot 3000', icon: '🤖', cost: 450000, mult: 2.5, headCol: '#90a4ae', shirtCol: '#00acc1', pantsCol: '#37474f', desc: '+150% do całej zdobywanej kasy (x2.5)' },
+  { id: 'gold', name: 'Złoty VIP', icon: '👑', cost: 65000000, mult: 5.0, headCol: '#ffd54f', shirtCol: '#ffb300', pantsCol: '#f57f17', desc: '+400% do całej zdobywanej kasy (x5.0)' },
+  { id: 'cosmic', name: 'Kosmiczny Lord', icon: '👽', cost: 12000000000, mult: 12.0, headCol: '#b388ff', shirtCol: '#651fff', pantsCol: '#311b92', desc: '+1100% do całej zdobywanej kasy (x12.0)' }
+];
+const THEMES = [
+  { id: 'box', name: 'Kartonowe Pudełko', reqPrestige: 0, c1: '#9c7a54', c2: '#5d432c', border: '#3e2b1d', line: 'rgba(40,26,14,0.45)' },
+  { id: 'lab', name: 'Laboratorium Sci-Fi', reqPrestige: 1, c1: '#1a3644', c2: '#0d1b22', border: '#00e5ff', line: 'rgba(0,229,255,0.22)' },
+  { id: 'vault', name: 'Złoty Sejf Bankowy', reqPrestige: 2, c1: '#7e6014', c2: '#3a2b07', border: '#ffd740', line: 'rgba(255,215,64,0.28)' },
+  { id: 'volcano', name: 'Wulkaniczna Kuźnia', reqPrestige: 3, c1: '#4e1609', c2: '#1f0703', border: '#ff3d00', line: 'rgba(255,87,34,0.28)' },
+  { id: 'space', name: 'Kosmiczna Pustka', reqPrestige: 4, c1: '#23113a', c2: '#090314', border: '#d500f9', line: 'rgba(213,0,249,0.25)' }
+];
+function fmt(n) {
+  if (n < 1000) return Math.floor(n).toString();
+  const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+  const tier = Math.floor(Math.log10(Math.abs(n)) / 3);
+  if (tier === 0) return Math.floor(n).toString();
+  const suffix = suffixes[tier] || `e${tier * 3}`;
+  const scaled = n / Math.pow(10, tier * 3);
+  return scaled.toFixed(scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2)) + suffix;
+}
+
+let settings = { sound: true, vibration: true, forceLandscape: false };
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playSound(type) {
+  if (!settings.sound) return;
+  try {
+    initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    if (type === 'hit' || type === 'bat') {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = type === 'bat' ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(type === 'bat' ? 190 : 130, now);
+      osc.frequency.exponentialRampToValueAtTime(38, now + 0.11);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.11);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.11);
+    } else if (type === 'saw') {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(95 + Math.random() * 35, now);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.08);
+    } else if (type === 'gun' || type === 'explosion') {
+      const dur = type === 'explosion' ? 0.38 : 0.14;
+      const bufSize = audioCtx.sampleRate * dur;
+      const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * (type === 'explosion' ? 0.12 : 0.04)));
+      const noise = audioCtx.createBufferSource(); noise.buffer = buf;
+      const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(type === 'explosion' ? 480 : 1400, now);
+      const gain = audioCtx.createGain(); gain.gain.setValueAtTime(type === 'explosion' ? 0.5 : 0.3, now);
+      noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+      noise.start(now);
+    } else if (type === 'laser') {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(720, now);
+      osc.frequency.exponentialRampToValueAtTime(220, now + 0.07);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.07);
+    } else if (type === 'freeze') {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.linearRampToValueAtTime(1600, now + 0.18);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.18);
+    } else if (type === 'coin' || type === 'quest') {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(type === 'quest' ? 587 : 880, now);
+      osc.frequency.setValueAtTime(type === 'quest' ? 880 : 1320, now + 0.06);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.18);
+    }
+  } catch (e) {}
+}
+
+function vibrate(pattern) {
+  if (!settings.vibration) return;
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+}
+
+let money = 0, unlocked = ['hand'], weaponLevels = {}, unlockedSkins = ['classic'], currentSkin = 'classic';
+let prestigeLevel = 0, currentTheme = 'box', currentWeapon = 'hand', currentShopCat = 'melee';
+let combo = 0, comboTimer = 0, goldRushTimer = 0, pinata = null, eventCooldown = 900;
+let quest = { type: 'hits', target: 15, progress: 0, reward: 50, text: 'Uderz kukłę 15 razy' };
+WEAPONS.forEach(w => { weaponLevels[w.id] = 1; });
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-
 let width, height;
+
 function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+  if (settings.forceLandscape) {
+    width = canvas.width = window.innerHeight;
+    height = canvas.height = window.innerWidth;
+  } else {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  const hint = document.getElementById('portrait-hint');
+  hint.style.display = (window.innerHeight > window.innerWidth && !settings.forceLandscape) ? 'flex' : 'none';
 }
 window.addEventListener('resize', resize);
-resize();
-
-// --- KATALOG PRZEDMIOTÓW ---
-const WEAPONS = [
-  // Ręczne / Biała broń
-  { id: 'hand', cat: 'melee', name: 'Ręka', icon: '✋', cost: 0, reward: 2, desc: 'Łap i rzucaj kukłą o ściany pudełka' },
-  { id: 'bat', cat: 'melee', name: 'Kij Baseballowy', icon: '🏏', cost: 20, reward: 5, desc: 'Machnij lub kliknij, by mocno uderzyć' },
-  { id: 'chainsaw', cat: 'melee', name: 'Piła Łańcuchowa', icon: '🪚', cost: 75, reward: 12, desc: 'Przytrzymaj na kukle dla ciągłych obrażeń' },
-
-  // Broń palna
-  { id: 'pistol', cat: 'guns', name: 'Pistolet', icon: '🔫', cost: 200, reward: 15, desc: 'Celne pojedyncze strzały z odrzutem' },
-  { id: 'shotgun', cat: 'guns', name: 'Strzelba', icon: '💥', cost: 600, reward: 40, desc: 'Chmura śrutu i potężny odrzut' },
-  { id: 'laser', cat: 'guns', name: 'Minigun Laser', icon: '☄️', cost: 1600, reward: 80, desc: 'Przytrzymaj palec, by palić wiązką lasera' },
-
-  // Zwierzęta
-  { id: 'bees', cat: 'animals', name: 'Rój Szerszeni', icon: '🐝', cost: 3500, reward: 60, desc: 'Wściekły rój żądli kukłę przez kilka sekund' },
-  { id: 'shark', cat: 'animals', name: 'Rekin Ludojad', icon: '🦈', cost: 8500, reward: 150, desc: 'Wyskakuje z boku i taranuje kukłę szczękami' },
-  { id: 'bull', cat: 'animals', name: 'Szalony Byk', icon: '🐂', cost: 20000, reward: 300, desc: 'Potężna szarża przez całe pudełko' },
-
-  // Żywioły i Kataklizmy
-  { id: 'flamethrower', cat: 'elements', name: 'Miotacz Ognia', icon: '🔥', cost: 45000, reward: 120, desc: 'Podpala kukłę, generując ciągłą kasę' },
-  { id: 'lightning', cat: 'elements', name: 'Piorun Zeusa', icon: '⚡', cost: 110000, reward: 250, desc: 'Potężne uderzenie błyskawicy z nieba' },
-  { id: 'blackhole', cat: 'elements', name: 'Czarna Dziura', icon: '🌀', cost: 250000, reward: 500, desc: 'Wciąga kukłę w wir, kręci nią i eksploduje' }
-];
-
-// --- STAN GRY I ZAPIS (LOCALSTORAGE) ---
-let money = 0;
-let unlocked = ['hand'];
-let currentWeapon = 'hand';
-let currentShopCat = 'melee';
 
 function loadSave() {
   try {
-    const savedMoney = localStorage.getItem('ktb_money');
-    const savedUnlocked = localStorage.getItem('ktb_unlocked');
-    if (savedMoney !== null) money = parseInt(savedMoney, 10) || 0;
-    if (savedUnlocked) unlocked = JSON.parse(savedUnlocked);
+    const m = localStorage.getItem('ktb_money'); if (m !== null) money = parseFloat(m) || 0;
+    const u = localStorage.getItem('ktb_unlocked'); if (u) unlocked = JSON.parse(u);
     if (!unlocked.includes('hand')) unlocked.unshift('hand');
+    const wl = localStorage.getItem('ktb_wlevels'); if (wl) Object.assign(weaponLevels, JSON.parse(wl));
+    const sk = localStorage.getItem('ktb_skins'); if (sk) unlockedSkins = JSON.parse(sk);
+    const csk = localStorage.getItem('ktb_cur_skin'); if (csk && unlockedSkins.includes(csk)) currentSkin = csk;
+    const pr = localStorage.getItem('ktb_prestige'); if (pr !== null) prestigeLevel = parseInt(pr, 10) || 0;
+    const th = localStorage.getItem('ktb_theme'); if (th) currentTheme = th;
+    const st = localStorage.getItem('ktb_settings'); if (st) Object.assign(settings, JSON.parse(st));
   } catch (e) {}
-  updateMoneyUI();
-  renderBottomBar();
+  applySettingsUI(); generateQuest(); updateHUD(); renderBottomBar();
 }
 
 function saveGame() {
   try {
     localStorage.setItem('ktb_money', money);
     localStorage.setItem('ktb_unlocked', JSON.stringify(unlocked));
+    localStorage.setItem('ktb_wlevels', JSON.stringify(weaponLevels));
+    localStorage.setItem('ktb_skins', JSON.stringify(unlockedSkins));
+    localStorage.setItem('ktb_cur_skin', currentSkin);
+    localStorage.setItem('ktb_prestige', prestigeLevel);
+    localStorage.setItem('ktb_theme', currentTheme);
+    localStorage.setItem('ktb_settings', JSON.stringify(settings));
   } catch (e) {}
 }
 
-function addMoney(amount, x, y) {
-  money += amount;
-  updateMoneyUI();
-  saveGame();
+function hardReset() {
+  if (!confirm('Zresetować cały postęp, kasę i Prestige do zera?')) return;
+  localStorage.clear();
+  money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; });
+  unlockedSkins = ['classic']; currentSkin = 'classic'; prestigeLevel = 0; currentTheme = 'box'; currentWeapon = 'hand';
+  saveGame(); toggleSettings(); updateHUD(); renderBottomBar(); resetDummy();
+}
+
+function getSkinMult() { const s = SKINS.find(x => x.id === currentSkin); return s ? s.mult : 1.0; }
+function getPrestigeMult() { return Math.pow(3, prestigeLevel); }
+function getTotalMultiplier() {
+  let m = getSkinMult() * getPrestigeMult();
+  if (goldRushTimer > 0) m *= 2;
+  if (combo > 1) m *= (1 + Math.min(combo, 100) * 0.04);
+  return m;
+}
+function getWeaponLevel(id) { return weaponLevels[id] || 1; }
+function getWeaponUpgradeCost(w) { return Math.round(w.upgBase * Math.pow(1.52, getWeaponLevel(w.id) - 1)); }
+function getWeaponReward(w) { return Math.max(1, Math.round(w.reward * Math.pow(1.34, getWeaponLevel(w.id) - 1) * getTotalMultiplier())); }
+function getBestUnlockedBaseReward() {
+  let best = 2;
+  WEAPONS.forEach(w => { if (unlocked.includes(w.id)) { const r = getWeaponReward(w); if (r > best) best = r; } });
+  return best;
+}
+
+function addMoney(amount, x, y, customLabel = '') {
+  money += amount; updateHUD(); saveGame();
   if (x !== undefined && y !== undefined) {
     floatingTexts.push({
-      x: x + (Math.random() - 0.5) * 30,
-      y: y - 10,
-      text: `+$${amount}`,
-      vy: -2.2,
-      life: 1.0,
-      scale: amount >= 100 ? 1.35 : 1.0
+      x: x + (Math.random() - 0.5) * 34, y: y - 12,
+      text: customLabel ? `${customLabel} +$${fmt(amount)}` : `+$${fmt(amount)}`,
+      vy: -2.4, life: 1.0,
+      color: customLabel ? '#ffd740' : (goldRushTimer > 0 ? '#ffee58' : '#69f0ae'),
+      scale: customLabel ? 1.35 : 1.05
     });
   }
 }
 
-function updateMoneyUI() {
-  document.getElementById('money-display').textContent = `$${money.toLocaleString('pl-PL')}`;
+function updateHUD() {
+  document.getElementById('money-display').textContent = `$${fmt(money)}`;
+  const sm = document.getElementById('shop-money'); if (sm) sm.textContent = `$${fmt(money)}`;
+  const mult = getTotalMultiplier();
+  document.getElementById('mult-display').textContent = `⚡ x${mult >= 100 ? fmt(mult) : mult.toFixed(1)}`;
+  const w = WEAPONS.find(x => x.id === currentWeapon);
+  if (w) {
+    const lv = getWeaponLevel(w.id), cost = getWeaponUpgradeCost(w), btn = document.getElementById('quick-upgrade-btn');
+    btn.textContent = `⬆️ ${w.icon} Lv.${lv + 1} ($${fmt(cost)})`;
+    btn.style.opacity = money >= cost ? '1' : '0.6';
+  }
 }
 
-// --- INTERFEJS SKLEPU I PASKA DOLNEGO ---
+function generateQuest() {
+  const base = getBestUnlockedBaseReward();
+  const types = [
+    { type: 'hits', target: 20 + Math.floor(Math.random() * 20), mult: 18, label: t => `🎯 Misja: Traf kukłę ${t} razy` },
+    { type: 'combo', target: 12 + Math.floor(Math.random() * 15), mult: 22, label: t => `🔥 Misja: Wbij Combo x${t}` },
+    { type: 'upgrade', target: 1, mult: 25, label: () => `⬆️ Misja: Ulepsz dowolną broń` },
+    { type: 'wall', target: 6, mult: 16, label: t => `💥 Misja: Uderz o ścianę ${t} razy` }
+  ];
+  const pick = types[Math.floor(Math.random() * types.length)];
+  quest = { type: pick.type, target: pick.target, progress: 0, reward: Math.max(50, Math.round(base * pick.mult)), text: pick.label(pick.target) };
+  updateQuestUI();
+}
+
+function advanceQuest(type, val = 1, isAbsolute = false) {
+  if (quest.type !== type) return;
+  quest.progress = isAbsolute ? Math.max(quest.progress, val) : quest.progress + val;
+  if (quest.progress >= quest.target) {
+    playSound('quest'); vibrate([30, 40, 60]);
+    addMoney(quest.reward, width * 0.5, height * 0.3, '🎁 MISJA!');
+    generateQuest();
+  } else updateQuestUI();
+}
+
+function updateQuestUI() {
+  document.getElementById('quest-text').textContent = `${quest.text} (${quest.progress}/${quest.target})`;
+  document.getElementById('quest-reward').textContent = `+$${fmt(quest.reward)}`;
+  document.getElementById('quest-fill').style.width = `${Math.min(100, Math.round((quest.progress / quest.target) * 100))}%`;
+}
+
 function renderBottomBar() {
-  const bar = document.getElementById('bottom-bar');
-  bar.innerHTML = '';
+  const bar = document.getElementById('bottom-bar'); bar.innerHTML = '';
   WEAPONS.forEach(w => {
     if (!unlocked.includes(w.id)) return;
-    const btn = document.createElement('div');
+    const lv = getWeaponLevel(w.id), btn = document.createElement('div');
     btn.className = 'weapon-slot' + (currentWeapon === w.id ? ' active' : '');
-    btn.innerHTML = `<span class="icon">${w.icon}</span><span>${w.name}</span>`;
-    btn.onclick = () => {
-      currentWeapon = w.id;
-      renderBottomBar();
-    };
+    btn.innerHTML = `<span>${w.icon}</span><span>${w.name}</span><span class="lv-tag">Lv.${lv}</span>`;
+    btn.onclick = () => { currentWeapon = w.id; renderBottomBar(); updateHUD(); };
     bar.appendChild(btn);
   });
+  updateHUD();
+}
+
+function upgradeCurrentWeapon() {
+  const w = WEAPONS.find(x => x.id === currentWeapon); if (!w) return;
+  const cost = getWeaponUpgradeCost(w);
+  if (money >= cost) {
+    money -= cost; weaponLevels[w.id] = getWeaponLevel(w.id) + 1;
+    playSound('coin'); vibrate(25); advanceQuest('upgrade', 1); saveGame(); renderBottomBar();
+    if (document.getElementById('shop-modal').classList.contains('open')) renderShopList();
+  }
 }
 
 function toggleShop() {
   const modal = document.getElementById('shop-modal');
   modal.classList.toggle('open');
-  if (modal.classList.contains('open')) {
-    renderShopList();
-  }
+  if (modal.classList.contains('open')) renderShopList();
 }
 
 function switchCategory(cat, btn) {
   currentShopCat = cat;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderShopList();
+  btn.classList.add('active'); renderShopList();
 }
 
+function getPrestigeCost() { return 50000000 * Math.pow(25, prestigeLevel); }
+
 function renderShopList() {
-  const list = document.getElementById('shop-list');
-  list.innerHTML = '';
-  WEAPONS.filter(w => w.cat === currentShopCat).forEach(w => {
-    const isUnlocked = unlocked.includes(w.id);
-    const isEquipped = currentWeapon === w.id;
-    const canAfford = money >= w.cost;
-
-    const item = document.createElement('div');
-    item.className = 'shop-item' + (isUnlocked ? ' unlocked' : '');
-
-    let btnClass = 'buy-btn';
-    let btnText = `Kup $${w.cost.toLocaleString('pl-PL')}`;
-    if (isUnlocked) {
-      btnClass += isEquipped ? ' equipped' : ' select-mode';
-      btnText = isEquipped ? 'Wybrano' : 'Wybierz';
-    } else if (!canAfford) {
-      btnClass += ' locked-poor';
-    }
-
-    item.innerHTML = `
-      <div class="item-info">
-        <div class="item-icon">${w.icon}</div>
-        <div>
-          <div class="item-name">${w.name}</div>
-          <div class="item-desc">${w.desc}</div>
-          <div class="item-reward">Zarobek: +$${w.reward} / trafienie</div>
-        </div>
-      </div>
-      <button class="${btnClass}">${btnText}</button>
-    `;
-
-    item.querySelector('button').onclick = () => {
-      if (isUnlocked) {
-        currentWeapon = w.id;
-        renderBottomBar();
-        renderShopList();
-      } else if (money >= w.cost) {
-        money -= w.cost;
-        unlocked.push(w.id);
-        currentWeapon = w.id;
-        updateMoneyUI();
-        saveGame();
-        renderBottomBar();
-        renderShopList();
-      }
+  const list = document.getElementById('shop-list'); list.innerHTML = '';
+  if (currentShopCat === 'skins') {
+    SKINS.forEach(s => {
+      const isUnl = unlockedSkins.includes(s.id), isEq = currentSkin === s.id, canAff = money >= s.cost;
+      const item = document.createElement('div'); item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
+      let btnClass = 'buy-btn' + (isUnl ? (isEq ? ' equipped' : ' select-mode') : (!canAff ? ' locked-poor' : ''));
+      let btnText = isUnl ? (isEq ? 'Założono' : 'Załóż') : `Kup $${fmt(s.cost)}`;
+      item.innerHTML = `<div class="item-info"><div class="item-icon">${s.icon}</div><div><div class="item-name">${s.name}</div><div class="item-desc">${s.desc}</div></div></div><button class="${btnClass}">${btnText}</button>`;
+      item.querySelector('button').onclick = () => {
+        if (isUnl) { currentSkin = s.id; playSound('coin'); saveGame(); updateHUD(); renderShopList(); }
+        else if (money >= s.cost) { money -= s.cost; unlockedSkins.push(s.id); currentSkin = s.id; playSound('coin'); saveGame(); updateHUD(); renderShopList(); }
+      };
+      list.appendChild(item);
+    });
+    return;
+  }
+  if (currentShopCat === 'prestige') {
+    const pCost = getPrestigeCost(), canP = money >= pCost, pCard = document.createElement('div');
+    pCard.className = 'shop-item unlocked'; pCard.style.gridColumn = '1 / -1';
+    pCard.innerHTML = `<div class="item-info"><div class="item-icon">🌟</div><div><div class="item-name">ODRODZENIE (PRESTIGE Lv.${prestigeLevel})</div><div class="item-desc">Resetuje kasę i bronie, ale daje STAŁY mnożnik x3 (Kolejny: x${fmt(Math.pow(3, prestigeLevel + 1))}) i nową arenę!</div><div class="item-reward">Koszt: $${fmt(pCost)}</div></div></div><button class="buy-btn ${canP ? 'upg-btn' : 'locked-poor'}">PRESTIGE ($${fmt(pCost)})</button>`;
+    pCard.querySelector('button').onclick = () => {
+      if (money < pCost || !confirm('Zresetować bronie i kasę za STAŁY mnożnik x3 i nową arenę?')) return;
+      prestigeLevel++; money = 0; unlocked = ['hand']; WEAPONS.forEach(w => { weaponLevels[w.id] = 1; }); currentWeapon = 'hand';
+      const newTheme = THEMES.find(t => t.reqPrestige === prestigeLevel); if (newTheme) currentTheme = newTheme.id;
+      playSound('quest'); vibrate([50, 40, 90]); saveGame(); renderBottomBar(); renderShopList();
     };
-
+    list.appendChild(pCard);
+    THEMES.forEach(t => {
+      const isUnl = prestigeLevel >= t.reqPrestige, isEq = currentTheme === t.id, item = document.createElement('div');
+      item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
+      item.innerHTML = `<div class="item-info"><div class="item-icon" style="background:${t.c1};border:2px solid ${t.border};">🏟️</div><div><div class="item-name">${t.name}</div><div class="item-desc">${isUnl ? 'Arena odblokowana' : `Wymaga Prestige ${t.reqPrestige}`}</div></div></div><button class="buy-btn ${isUnl ? (isEq ? 'equipped' : 'select-mode') : 'locked-poor'}">${isUnl ? (isEq ? 'Aktywna' : 'Wybierz') : `Prestige ${t.reqPrestige}`}</button>`;
+      item.querySelector('button').onclick = () => { if (isUnl) { currentTheme = t.id; saveGame(); renderShopList(); } };
+      list.appendChild(item);
+    });
+    return;
+  }
+  WEAPONS.filter(w => w.cat === currentShopCat).forEach(w => {
+    const isUnl = unlocked.includes(w.id), isEq = currentWeapon === w.id, canAff = money >= w.cost;
+    const lv = getWeaponLevel(w.id), upgCost = getWeaponUpgradeCost(w), canUpg = money >= upgCost;
+    const item = document.createElement('div'); item.className = 'shop-item' + (isUnl ? ' unlocked' : '');
+    let btnClass = 'buy-btn' + (isUnl ? (isEq ? ' equipped' : ' select-mode') : (!canAff ? ' locked-poor' : ''));
+    let btnText = isUnl ? (isEq ? 'Wybrano' : 'Wybierz') : `Kup $${fmt(w.cost)}`;
+    item.innerHTML = `<div class="item-info"><div class="item-icon">${w.icon}</div><div><div class="item-name">${w.name} <span style="color:#ffd54f;font-size:11px;">Lv.${lv}</span></div><div class="item-desc">${w.desc}</div><div class="item-reward">Zarobek: +$${fmt(getWeaponReward(w))} / hit</div></div></div><div class="item-actions"><button class="${btnClass} act-main">${btnText}</button>${isUnl ? `<button class="buy-btn ${canUpg ? 'upg-btn' : 'locked-poor'} act-upg">⬆️ Lv.${lv + 1} ($${fmt(upgCost)})</button>` : ''}</div>`;
+    item.querySelector('.act-main').onclick = () => {
+      if (isUnl) { currentWeapon = w.id; renderBottomBar(); renderShopList(); }
+      else if (money >= w.cost) { money -= w.cost; unlocked.push(w.id); currentWeapon = w.id; playSound('coin'); saveGame(); renderBottomBar(); renderShopList(); }
+    };
+    const upgBtn = item.querySelector('.act-upg');
+    if (upgBtn) upgBtn.onclick = () => {
+      if (money >= upgCost) { money -= upgCost; weaponLevels[w.id] = lv + 1; playSound('coin'); advanceQuest('upgrade', 1); saveGame(); renderBottomBar(); renderShopList(); }
+    };
     list.appendChild(item);
   });
 }
 
-// --- FIZYKA RAGDOLLA (BUDDY) ---
-const gravity = 0.42;
-const friction = 0.985;
-const bounce = 0.55;
-
-let points = [];
-let sticks = [];
-let dummy = {};
-
-// Efekty i obiekty aktywne
-let particles = [];
-let floatingTexts = [];
-let tracers = [];
-let bees = [];
-let animals = [];
-let blackHoles = [];
-let lightnings = [];
-
-let screenShake = 0;
-let flashAlpha = 0;
-let hurtTimer = 0;
-let shockTimer = 0;
-let burnTimer = 0;
-let burnTick = 0;
-
-function getBoxBounds() {
-  return {
-    left: 16,
-    right: width - 16,
-    top: 66,
-    bottom: height - 74
-  };
+function toggleSettings() { document.getElementById('settings-modal').classList.toggle('open'); }
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  if (key === 'sound' && settings.sound) playSound('coin');
+  if (key === 'vibration' && settings.vibration) vibrate(40);
+  applySettingsUI(); saveGame();
 }
+function toggleForceLandscape() { settings.forceLandscape = !settings.forceLandscape; applySettingsUI(); saveGame(); resize(); resetDummy(); }
+function applySettingsUI() {
+  const bSound = document.getElementById('btn-sound'); bSound.textContent = settings.sound ? 'ON' : 'OFF'; bSound.className = 'toggle-btn ' + (settings.sound ? 'toggle-on' : 'toggle-off');
+  const bVib = document.getElementById('btn-vib'); bVib.textContent = settings.vibration ? 'ON' : 'OFF'; bVib.className = 'toggle-btn ' + (settings.vibration ? 'toggle-on' : 'toggle-off');
+  const bRot = document.getElementById('btn-rot'); bRot.textContent = settings.forceLandscape ? 'ON' : 'OFF'; bRot.className = 'toggle-btn ' + (settings.forceLandscape ? 'toggle-on' : 'toggle-off');
+  document.body.classList.toggle('force-landscape', settings.forceLandscape);
+};
+const gravity = 0.42, friction = 0.985, bounce = 0.58;
+let points = [], sticks = [], dummy = {};
+let particles = [], shockwaves = [], floatingTexts = [], tracers = [], bees = [], animals = [], blackHoles = [], lightnings = [], anvils = [], rockets = [];
+let screenShake = 0, flashAlpha = 0, hurtTimer = 0, shockTimer = 0, burnTimer = 0, burnTick = 0, frozenTimer = 0;
+
+function getBoxBounds() { return { left: 14, right: width - 14, top: 52, bottom: height - 58 }; }
 
 class Point {
-  constructor(x, y, r, name = '') {
-    this.x = x;
-    this.y = y;
-    this.oldx = x;
-    this.oldy = y;
-    this.r = r;
-    this.name = name;
-  }
+  constructor(x, y, r, name = '') { this.x = x; this.y = y; this.oldx = x; this.oldy = y; this.r = r; this.name = name; }
 }
-
 class Stick {
-  constructor(p0, p1, len, thickness, color, visible = true) {
-    this.p0 = p0;
-    this.p1 = p1;
-    this.len = len || Math.hypot(p1.x - p0.x, p1.y - p0.y);
-    this.thickness = thickness;
-    this.color = color;
-    this.visible = visible;
+  constructor(p0, p1, len, thickness, role, visible = true) {
+    this.p0 = p0; this.p1 = p1; this.len = len || Math.hypot(p1.x - p0.x, p1.y - p0.y);
+    this.thickness = thickness; this.role = role; this.visible = visible;
   }
 }
 
 function initDummy() {
-  points = [];
-  sticks = [];
-  const cx = width * 0.5;
-  const cy = height * 0.42;
-
-  const head = new Point(cx, cy - 65, 28, 'head');
-  const neck = new Point(cx, cy - 32, 8, 'neck');
-  const chest = new Point(cx, cy - 5, 14, 'chest');
-  const pelvis = new Point(cx, cy + 28, 13, 'pelvis');
-
-  const lElbow = new Point(cx - 28, cy - 12, 8);
-  const lHand = new Point(cx - 48, cy + 10, 10);
-  const rElbow = new Point(cx + 28, cy - 12, 8);
-  const rHand = new Point(cx + 48, cy + 10, 10);
-
-  const lKnee = new Point(cx - 18, cy + 62, 9);
-  const lFoot = new Point(cx - 22, cy + 96, 11);
-  const rKnee = new Point(cx + 18, cy + 62, 9);
-  const rFoot = new Point(cx + 22, cy + 96, 11);
-
+  points = []; sticks = [];
+  const cx = width * 0.5, cy = height * 0.46;
+  const head = new Point(cx, cy - 60, 26, 'head'), neck = new Point(cx, cy - 30, 8, 'neck');
+  const chest = new Point(cx, cy - 5, 14, 'chest'), pelvis = new Point(cx, cy + 25, 13, 'pelvis');
+  const lElbow = new Point(cx - 26, cy - 10, 8), lHand = new Point(cx - 46, cy + 10, 10);
+  const rElbow = new Point(cx + 26, cy - 10, 8), rHand = new Point(cx + 46, cy + 10, 10);
+  const lKnee = new Point(cx - 17, cy + 56, 9), lFoot = new Point(cx - 21, cy + 88, 11);
+  const rKnee = new Point(cx + 17, cy + 56, 9), rFoot = new Point(cx + 21, cy + 88, 11);
   points.push(head, neck, chest, pelvis, lElbow, lHand, rElbow, rHand, lKnee, lFoot, rKnee, rFoot);
-
-  const burlap = '#d7a977';
-  const shirt = '#3973ac';
-  const pants = '#2c3e50';
-
   sticks.push(
-    new Stick(head, neck, 33, 12, burlap),
-    new Stick(neck, chest, 27, 26, shirt),
-    new Stick(chest, pelvis, 33, 24, shirt),
-
-    new Stick(neck, lElbow, 32, 13, shirt),
-    new Stick(lElbow, lHand, 28, 11, burlap),
-    new Stick(neck, rElbow, 32, 13, shirt),
-    new Stick(rElbow, rHand, 28, 11, burlap),
-
-    new Stick(pelvis, lKnee, 38, 15, pants),
-    new Stick(lKnee, lFoot, 34, 13, burlap),
-    new Stick(pelvis, rKnee, 38, 15, pants),
-    new Stick(rKnee, rFoot, 34, 13, burlap),
-
-    // Więzy strukturalne utrzymujące kształt kukły
-    new Stick(head, chest, 60, 0, '', false),
-    new Stick(neck, pelvis, 60, 0, '', false),
-    new Stick(head, pelvis, 93, 0, '', false),
-    new Stick(lElbow, rElbow, 52, 0, '', false),
-    new Stick(lKnee, rKnee, 34, 0, '', false)
+    new Stick(head, neck, 30, 12, 'skin'), new Stick(neck, chest, 25, 25, 'shirt'), new Stick(chest, pelvis, 30, 23, 'shirt'),
+    new Stick(neck, lElbow, 30, 12, 'shirt'), new Stick(lElbow, lHand, 26, 10, 'skin'),
+    new Stick(neck, rElbow, 30, 12, 'shirt'), new Stick(rElbow, rHand, 26, 10, 'skin'),
+    new Stick(pelvis, lKnee, 34, 14, 'pants'), new Stick(lKnee, lFoot, 32, 12, 'skin'),
+    new Stick(pelvis, rKnee, 34, 14, 'pants'), new Stick(rKnee, rFoot, 32, 12, 'skin'),
+    new Stick(head, chest, 55, 0, '', false), new Stick(neck, pelvis, 55, 0, '', false),
+    new Stick(head, pelvis, 85, 0, '', false), new Stick(lElbow, rElbow, 48, 0, '', false), new Stick(lKnee, rKnee, 32, 0, '', false)
   );
-
   dummy = { head, neck, chest, pelvis, lHand, rHand, lFoot, rFoot };
 }
 
 function resetDummy() {
-  bees = [];
-  animals = [];
-  blackHoles = [];
-  burnTimer = 0;
-  shockTimer = 0;
-  initDummy();
+  bees = []; animals = []; blackHoles = []; anvils = []; rockets = [];
+  burnTimer = 0; shockTimer = 0; frozenTimer = 0; initDummy();
 }
 
-// --- EFEKTY CZĄSTECZKOWE I OBRAŻENIA ---
-function spawnStuffing(x, y, count = 10, speed = 7) {
+function addShockwave(x, y, maxR = 110, color = '#ffca28') { shockwaves.push({ x, y, r: 10, maxR, color, life: 1.0 }); }
+
+function spawnStuffing(x, y, count = 12, speed = 8, customColor = null) {
   for (let i = 0; i < count; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const s = 1 + Math.random() * speed;
-    const type = Math.random();
+    const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * speed, t = Math.random();
     particles.push({
-      x, y,
-      vx: Math.cos(a) * s,
-      vy: Math.sin(a) * s - 1.5,
-      size: 3 + Math.random() * 4,
-      color: type < 0.5 ? '#f5e6cc' : (type < 0.85 ? '#ffab00' : '#e53935'),
-      life: 1.0
+      x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, size: 3 + Math.random() * 4.5,
+      color: customColor || (t < 0.45 ? '#f5e6cc' : (t < 0.8 ? '#ffab00' : '#ff1744')), life: 1.0
     });
   }
 }
 
-function applyForceToDummy(originX, originY, forceX, forceY, radius = 150) {
+function applyForceToDummy(originX, originY, forceX, forceY, radius = 160) {
   points.forEach(p => {
     const d = Math.hypot(p.x - originX, p.y - originY);
     if (d < radius) {
-      const factor = 1 - (d / radius) * 0.5;
-      p.oldx -= forceX * factor;
-      p.oldy -= forceY * factor;
+      const factor = 1 - (d / radius) * 0.45;
+      p.oldx -= forceX * factor; p.oldy -= forceY * factor;
     }
   });
 }
 
-function hitDummy(reward, x, y, fx, fy, shake = 6) {
-  hurtTimer = 45;
-  screenShake = Math.max(screenShake, shake);
-  addMoney(reward, x, y);
-  spawnStuffing(x, y, 12, 8);
-  applyForceToDummy(x, y, fx, fy, 170);
+function registerCombo() {
+  combo++; comboTimer = 110;
+  const box = document.getElementById('combo-box');
+  if (combo >= 2) {
+    box.style.display = 'block'; box.style.transform = 'scale(1.22)';
+    setTimeout(() => { box.style.transform = 'scale(1)'; }, 80);
+    document.getElementById('combo-num').textContent = `COMBO x${combo}`;
+    document.getElementById('combo-sub').textContent = `Bonus kasy +${Math.min(combo, 100) * 4}%`;
+    advanceQuest('combo', combo, true);
+  }
 }
 
-// --- OBSŁUGA DOTYKU I BRONI ---
+function hitDummy(baseReward, x, y, fx, fy, shake = 7, soundType = 'hit') {
+  registerCombo(); advanceQuest('hits', 1);
+  let finalReward = baseReward, label = '';
+  if (frozenTimer > 0 && soundType !== 'freeze') {
+    frozenTimer = 0; finalReward *= 3; label = '❄️ KRUSZENIE x3!';
+    addShockwave(x, y, 140, '#80deea'); spawnStuffing(x, y, 25, 13, '#80deea');
+    playSound('explosion'); vibrate([35, 25, 55]);
+  } else {
+    playSound(soundType); vibrate(shake >= 12 ? [30, 20, 45] : 18);
+  }
+  hurtTimer = 45; screenShake = Math.max(screenShake, shake);
+  addMoney(finalReward, x, y, label); spawnStuffing(x, y, 11, 8);
+  applyForceToDummy(x, y, fx, fy, 175);
+}
+
 let pointer = { x: 0, y: 0, prevX: 0, prevY: 0, down: false, grabbed: null };
-let holdTick = 0;
-let batSwing = null;
-let slamCooldown = 0;
-
-function getWeaponData(id) {
-  return WEAPONS.find(w => w.id === id);
-}
+let holdTick = 0, batSwing = null, slamCooldown = 0;
+function getWeaponData(id) { return WEAPONS.find(w => w.id === id); }
 
 function getPointerPos(e) {
-  const rect = canvas.getBoundingClientRect();
   const touch = e.touches && e.touches[0] ? e.touches[0] : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0] : e);
-  return {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top
-  };
+  if (settings.forceLandscape) return { x: touch.clientY, y: window.innerWidth - touch.clientX };
+  return { x: touch.clientX, y: touch.clientY };
 }
 
 function onPointerDown(e) {
   if (e.target !== canvas) return;
-  e.preventDefault();
+  e.preventDefault(); initAudio();
   const pos = getPointerPos(e);
-  pointer.x = pointer.prevX = pos.x;
-  pointer.y = pointer.prevY = pos.y;
-  pointer.down = true;
-  holdTick = 0;
+  pointer.x = pointer.prevX = pos.x; pointer.y = pointer.prevY = pos.y;
+  pointer.down = true; holdTick = 0;
+  const w = getWeaponData(currentWeapon), reward = getWeaponReward(w);
 
-  const w = getWeaponData(currentWeapon);
-  const cx = dummy.chest.x;
-  const cy = dummy.chest.y;
-
-  if (currentWeapon === 'hand') {
-    let closest = null;
-    let minD = 75;
-    points.forEach(p => {
-      const d = Math.hypot(p.x - pos.x, p.y - pos.y);
-      if (d < minD) { minD = d; closest = p; }
-    });
-    if (closest) {
-      pointer.grabbed = closest;
-      // Lekkie pacnięcie przy samym złapaniu
-      addMoney(1, closest.x, closest.y);
-      hurtTimer = 20;
+  if (pinata && Math.hypot(pos.x - pinata.x, pos.y - pinata.y) < 55) {
+    pinata.hp--; playSound('coin'); vibrate(30);
+    spawnStuffing(pinata.x, pinata.y, 14, 10, '#ffd740');
+    const bonus = Math.round(getBestUnlockedBaseReward() * 4);
+    addMoney(bonus, pinata.x, pinata.y, '🪅 PIÑATA!'); pinata.vy = -7;
+    if (pinata.hp <= 0) {
+      addShockwave(pinata.x, pinata.y, 160, '#ffd740');
+      addMoney(bonus * 4, pinata.x, pinata.y, '🎉 ROZBITA!'); pinata = null;
     }
+    return;
+  }
+
+  const cx = dummy.chest.x, cy = dummy.chest.y;
+  if (currentWeapon === 'hand') {
+    let closest = null, minD = 75;
+    points.forEach(p => { const d = Math.hypot(p.x - pos.x, p.y - pos.y); if (d < minD) { minD = d; closest = p; } });
+    if (closest) { pointer.grabbed = closest; hitDummy(reward, closest.x, closest.y, 0, -2, 3, 'hit'); }
   } else if (currentWeapon === 'bat') {
     batSwing = { x: pos.x, y: pos.y, timer: 12 };
-    const dist = Math.hypot(cx - pos.x, cy - pos.y);
-    if (dist < 140) {
-      const dir = pos.x < cx ? 1 : -1;
-      hitDummy(w.reward, dummy.head.x, dummy.head.y, dir * 18, -12, 9);
-    }
+    if (Math.hypot(cx - pos.x, cy - pos.y) < 145) hitDummy(reward, dummy.head.x, dummy.head.y, (pos.x < cx ? 1 : -1) * 19, -13, 9, 'bat');
+  } else if (currentWeapon === 'anvil') {
+    anvils.push({ x: dummy.head.x + (Math.random() - 0.5) * 20, y: getBoxBounds().top + 15, vy: 6, reward, hasHit: false, life: 75 });
   } else if (currentWeapon === 'pistol') {
-    fireGun(pos.x, pos.y, 1, 0.04, w.reward, 15, 7);
+    fireGun(pos.x, pos.y, 1, 0.04, reward, 16, 7);
   } else if (currentWeapon === 'shotgun') {
-    fireGun(pos.x, pos.y, 6, 0.25, w.reward, 24, 14);
+    fireGun(pos.x, pos.y, 6, 0.24, reward, 25, 14);
+  } else if (currentWeapon === 'rpg') {
+    const sx = width * 0.5, sy = height - 60, ang = Math.atan2(pos.y - sy, pos.x - sx);
+    rockets.push({ x: sx, y: sy, vx: Math.cos(ang) * 18, vy: Math.sin(ang) * 18, reward }); playSound('gun');
   } else if (currentWeapon === 'bees') {
-    spawnBees(pos.x, pos.y, w.reward);
+    spawnBeesBalanced(pos.x, pos.y, reward);
   } else if (currentWeapon === 'shark') {
-    spawnShark(w.reward);
+    spawnAnimal('shark', '🦈', reward, 20, -7);
   } else if (currentWeapon === 'bull') {
-    spawnBull(w.reward);
+    spawnAnimal('bull', '🐂', reward, 25, 0);
+  } else if (currentWeapon === 'dragon') {
+    spawnAnimal('dragon', '🐉', reward, 15, 0);
+  } else if (currentWeapon === 'freeze') {
+    castFreeze(reward);
   } else if (currentWeapon === 'lightning') {
-    strikeLightning(w.reward);
+    strikeLightning(reward);
   } else if (currentWeapon === 'blackhole') {
-    spawnBlackHole(pos.x, pos.y, w.reward);
+    spawnBlackHole(pos.x, pos.y, reward);
   }
 }
 
@@ -676,671 +646,391 @@ function onPointerMove(e) {
   if (!pointer.down) return;
   e.preventDefault();
   const pos = getPointerPos(e);
-  pointer.prevX = pointer.x;
-  pointer.prevY = pointer.y;
-  pointer.x = pos.x;
-  pointer.y = pos.y;
-
+  pointer.prevX = pointer.x; pointer.prevY = pointer.y; pointer.x = pos.x; pointer.y = pos.y;
   if (currentWeapon === 'bat') {
     const speed = Math.hypot(pointer.x - pointer.prevX, pointer.y - pointer.prevY);
-    if (speed > 14 && Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 90) {
+    if (speed > 14 && Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 95) {
       const w = getWeaponData('bat');
-      const vx = (pointer.x - pointer.prevX) * 0.9;
-      const vy = (pointer.y - pointer.prevY) * 0.9;
-      hitDummy(w.reward, dummy.chest.x, dummy.chest.y, vx, vy, 8);
+      hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (pointer.x - pointer.prevX) * 0.9, (pointer.y - pointer.prevY) * 0.9, 8, 'bat');
     }
   }
 }
 
-function onPointerUp() {
-  pointer.down = false;
-  pointer.grabbed = null;
-}
+function onPointerUp() { pointer.down = false; pointer.grabbed = null; }
+canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mousemove', onPointerMove); window.addEventListener('mouseup', onPointerUp);
+canvas.addEventListener('touchstart', onPointerDown, { passive: false }); window.addEventListener('touchmove', onPointerMove, { passive: false }); window.addEventListener('touchend', onPointerUp);
 
-canvas.addEventListener('mousedown', onPointerDown);
-window.addEventListener('mousemove', onPointerMove);
-window.addEventListener('mouseup', onPointerUp);
-
-canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-window.addEventListener('touchmove', onPointerMove, { passive: false });
-window.addEventListener('touchend', onPointerUp);
-
-// --- MECHANIKI POSZCZEGÓLNYCH BRONI ---
 function fireGun(tx, ty, pellets, spread, reward, knockback, shake) {
-  const startX = width * 0.5;
-  const startY = height - 65;
+  const startX = width * 0.5, startY = height - 60;
   let hitAny = false;
-
   for (let i = 0; i < pellets; i++) {
-    const offsetX = (Math.random() - 0.5) * spread * 250;
-    const offsetY = (Math.random() - 0.5) * spread * 250;
-    const px = tx + offsetX;
-    const py = ty + offsetY;
-    tracers.push({ x1: startX, y1: startY, x2: px, y2: py, life: 1.0, color: '#ffee58' });
-
-    points.forEach(p => {
-      if (Math.hypot(p.x - px, p.y - py) < p.r + 45) {
-        hitAny = true;
-      }
-    });
+    const px = tx + (Math.random() - 0.5) * spread * 240, py = ty + (Math.random() - 0.5) * spread * 240;
+    tracers.push({ x1: startX, y1: startY, x2: px, y2: py, life: 1.0 });
+    points.forEach(p => { if (Math.hypot(p.x - px, p.y - py) < p.r + 45) hitAny = true; });
   }
-
-  screenShake = Math.max(screenShake, shake);
+  playSound('gun'); screenShake = Math.max(screenShake, shake);
   if (hitAny || Math.hypot(dummy.chest.x - tx, dummy.chest.y - ty) < 110) {
     const angle = Math.atan2(dummy.chest.y - startY, dummy.chest.x - startX);
-    hitDummy(
-      reward,
-      dummy.chest.x,
-      dummy.chest.y,
-      Math.cos(angle) * knockback + (Math.random() - 0.5) * 10,
-      Math.sin(angle) * knockback - 6,
-      shake
-    );
+    hitDummy(reward, dummy.chest.x, dummy.chest.y, Math.cos(angle) * knockback + (Math.random() - 0.5) * 10, Math.sin(angle) * knockback - 6, shake, 'gun');
   }
 }
 
-function spawnBees(x, y, reward) {
-  for (let i = 0; i < 10; i++) {
-    bees.push({
-      x: x + (Math.random() - 0.5) * 60,
-      y: y + (Math.random() - 0.5) * 60,
-      vx: 0,
-      vy: 0,
-      timer: 180 + Math.random() * 60,
-      reward: Math.ceil(reward / 4)
-    });
+let beeStingTick = 0;
+function spawnBeesBalanced(x, y, reward) {
+  if (bees.length > 0) {
+    bees.forEach(b => { b.timer = 180; b.reward = reward; });
+    hitDummy(reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 8, -4, 4, 'hit');
+    return;
   }
+  for (let i = 0; i < 8; i++) bees.push({ x: x + (Math.random() - 0.5) * 60, y: y + (Math.random() - 0.5) * 60, vx: 0, vy: 0, timer: 180, reward });
 }
 
-function spawnShark(reward) {
-  const fromLeft = Math.random() < 0.5;
-  animals.push({
-    type: 'shark',
-    icon: '🦈',
-    x: fromLeft ? -60 : width + 60,
-    y: dummy.chest.y + 20,
-    vx: fromLeft ? 19 : -19,
-    vy: -7,
-    dir: fromLeft ? 1 : -1,
-    reward,
-    hasHit: false
-  });
+function spawnAnimal(type, icon, reward, speedX, speedY) {
+  const bounds = getBoxBounds(), fromLeft = Math.random() < 0.5;
+  let yPos = dummy.chest.y + 15;
+  if (type === 'bull') yPos = bounds.bottom - 36;
+  if (type === 'dragon') yPos = bounds.top + 65;
+  animals.push({ type, icon, x: fromLeft ? -60 : width + 60, y: yPos, vx: fromLeft ? speedX : -speedX, vy: speedY, dir: fromLeft ? 1 : -1, reward, hasHit: false, tick: 0 });
+  playSound('explosion');
 }
 
-function spawnBull(reward) {
-  const bounds = getBoxBounds();
-  const fromLeft = Math.random() < 0.5;
-  animals.push({
-    type: 'bull',
-    icon: '🐂',
-    x: fromLeft ? -70 : width + 70,
-    y: bounds.bottom - 35,
-    vx: fromLeft ? 24 : -24,
-    vy: 0,
-    dir: fromLeft ? 1 : -1,
-    reward,
-    hasHit: false
-  });
-  screenShake = 10;
+function castFreeze(reward) {
+  frozenTimer = 240; addShockwave(dummy.chest.x, dummy.chest.y, 140, '#80deea');
+  spawnStuffing(dummy.chest.x, dummy.chest.y, 20, 9, '#b2ebf2');
+  hitDummy(reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 10, -6, 8, 'freeze');
 }
 
 function strikeLightning(reward) {
-  const tx = dummy.head.x;
-  const ty = dummy.head.y;
-  const segments = [];
-  let curX = tx + (Math.random() - 0.5) * 80;
-  let curY = getBoxBounds().top;
-
+  const tx = dummy.head.x, ty = dummy.head.y, segments = [];
+  let curX = tx + (Math.random() - 0.5) * 80, curY = getBoxBounds().top;
   while (curY < ty) {
     const nextY = Math.min(ty, curY + 25 + Math.random() * 25);
     const nextX = nextY === ty ? tx : curX + (Math.random() - 0.5) * 65;
     segments.push({ x1: curX, y1: curY, x2: nextX, y2: nextY });
-    curX = nextX;
-    curY = nextY;
+    curX = nextX; curY = nextY;
   }
-
-  lightnings.push({ segments, life: 1.0 });
-  flashAlpha = 0.85;
-  shockTimer = 70;
-  hitDummy(reward, tx, ty, (Math.random() - 0.5) * 35, -22, 20);
+  lightnings.push({ segments, life: 1.0 }); flashAlpha = 0.85; shockTimer = 70;
+  addShockwave(tx, ty, 160, '#80d8ff');
+  hitDummy(reward, tx, ty, (Math.random() - 0.5) * 35, -24, 20, 'explosion');
 }
 
 function spawnBlackHole(x, y, reward) {
-  blackHoles.push({
-    x, y,
-    timer: 170,
-    angle: 0,
-    reward,
-    tick: 0
-  });
-}
-
-// --- PĘTLA AKTUALIZACJI (UPDATE) ---
+  if (blackHoles.length >= 2) blackHoles.shift();
+  blackHoles.push({ x, y, timer: 165, angle: 0, reward, tick: 0 });
+  playSound('explosion');
+};
 function update() {
   const bounds = getBoxBounds();
   if (slamCooldown > 0) slamCooldown--;
   if (hurtTimer > 0) hurtTimer--;
   if (shockTimer > 0) shockTimer--;
+  if (frozenTimer > 0) frozenTimer--;
   if (screenShake > 0) screenShake *= 0.88;
   if (flashAlpha > 0) flashAlpha -= 0.06;
-  if (batSwing) {
-    batSwing.timer--;
-    if (batSwing.timer <= 0) batSwing = null;
+
+  if (comboTimer > 0) {
+    comboTimer--;
+    if (comboTimer <= 0) { combo = 0; document.getElementById('combo-box').style.display = 'none'; updateHUD(); }
   }
 
-  // Bronie ciągłe przy przytrzymaniu palca (Piła, Laser, Miotacz ognia)
+  if (goldRushTimer > 0) {
+    goldRushTimer--;
+    const banner = document.getElementById('event-banner');
+    banner.style.display = 'block';
+    banner.textContent = `🔥 GORĄCZKA ZŁOTA: x2 KASA! (${Math.ceil(goldRushTimer / 60)}s)`;
+    if (goldRushTimer === 0) { banner.style.display = 'none'; updateHUD(); }
+  }
+
+  eventCooldown--;
+  if (eventCooldown <= 0 && !pinata && goldRushTimer <= 0) {
+    eventCooldown = 1400 + Math.floor(Math.random() * 600);
+    if (Math.random() < 0.55) {
+      pinata = { x: bounds.left + 60, y: bounds.top + 80, vx: 4.2, vy: 2.8, hp: 5, timer: 600 };
+    } else {
+      goldRushTimer = 900; playSound('quest'); updateHUD();
+    }
+  }
+
+  if (pinata) {
+    pinata.timer--; pinata.x += pinata.vx; pinata.y += pinata.vy; pinata.vy += 0.12;
+    if (pinata.x < bounds.left + 35 || pinata.x > bounds.right - 35) pinata.vx *= -1;
+    if (pinata.y > bounds.bottom - 50) { pinata.y = bounds.bottom - 50; pinata.vy = -6.5; }
+    if (pinata.y < bounds.top + 35) { pinata.y = bounds.top + 35; pinata.vy = 3; }
+    if (pinata.timer <= 0) pinata = null;
+  }
+
+  if (batSwing) { batSwing.timer--; if (batSwing.timer <= 0) batSwing = null; }
+
   if (pointer.down) {
     holdTick++;
+    const w = getWeaponData(currentWeapon);
     if (currentWeapon === 'chainsaw') {
-      const d = Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y);
-      if (d < 85 && holdTick % 9 === 0) {
-        const w = getWeaponData('chainsaw');
-        hitDummy(w.reward, pointer.x, pointer.y, (Math.random() - 0.5) * 14, -7, 6);
+      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 90 && holdTick % 9 === 0) {
+        hitDummy(getWeaponReward(w), pointer.x, pointer.y, (Math.random() - 0.5) * 14, -7, 6, 'saw');
       }
     } else if (currentWeapon === 'laser') {
       if (holdTick % 7 === 0) {
-        const w = getWeaponData('laser');
-        const d = Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y);
-        if (d < 100) {
-          hitDummy(w.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -10, 9);
+        playSound('laser');
+        if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 105) {
+          hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -10, 9, 'laser');
         }
       }
     } else if (currentWeapon === 'flamethrower') {
       for (let i = 0; i < 3; i++) {
-        const startX = width * 0.5;
-        const startY = height - 70;
-        const angle = Math.atan2(pointer.y - startY, pointer.x - startX) + (Math.random() - 0.5) * 0.3;
-        const spd = 10 + Math.random() * 7;
-        particles.push({
-          x: startX, y: startY,
-          vx: Math.cos(angle) * spd,
-          vy: Math.sin(angle) * spd,
-          size: 7 + Math.random() * 8,
-          color: Math.random() < 0.5 ? '#ff6d00' : '#ffd600',
-          life: 0.75
-        });
+        const startX = width * 0.5, startY = height - 60;
+        const angle = Math.atan2(pointer.y - startY, pointer.x - startX) + (Math.random() - 0.5) * 0.3, spd = 11 + Math.random() * 7;
+        particles.push({ x: startX, y: startY, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, size: 7 + Math.random() * 8, color: Math.random() < 0.5 ? '#ff6d00' : '#ffd600', life: 0.75 });
       }
-      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 110) {
-        burnTimer = 180;
-        if (holdTick % 12 === 0) {
-          const w = getWeaponData('flamethrower');
-          hitDummy(w.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 8, -5, 4);
-        }
+      if (Math.hypot(dummy.chest.x - pointer.x, dummy.chest.y - pointer.y) < 115) {
+        burnTimer = 160;
+        if (holdTick % 10 === 0) hitDummy(getWeaponReward(w), dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 8, -5, 5, 'explosion');
       }
     }
   }
 
-  // Efekt podpalenia kukły (DoT)
   if (burnTimer > 0) {
-    burnTimer--;
-    burnTick++;
-    hurtTimer = 10;
+    burnTimer--; burnTick++; hurtTimer = 10;
     points.forEach(p => {
-      if (Math.random() < 0.35) {
-        particles.push({
-          x: p.x + (Math.random() - 0.5) * 15,
-          y: p.y + (Math.random() - 0.5) * 15,
-          vx: (Math.random() - 0.5) * 2,
-          vy: -2 - Math.random() * 3,
-          size: 5 + Math.random() * 6,
-          color: Math.random() < 0.6 ? '#ff5722' : '#ffeb3b',
-          life: 0.6
-        });
-      }
+      if (Math.random() < 0.3) particles.push({ x: p.x + (Math.random() - 0.5) * 14, y: p.y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 2, vy: -2.5 - Math.random() * 3, size: 5 + Math.random() * 5, color: Math.random() < 0.6 ? '#ff5722' : '#ffeb3b', life: 0.55 });
     });
-    if (burnTick % 25 === 0) {
-      addMoney(40, dummy.head.x, dummy.head.y);
+    if (burnTick % 24 === 0) addMoney(Math.round(getWeaponReward(getWeaponData('flamethrower')) * 0.35), dummy.head.x, dummy.head.y);
+  }
+
+  for (let i = anvils.length - 1; i >= 0; i--) {
+    const av = anvils[i]; av.vy += 0.85; av.y += av.vy;
+    if (!av.hasHit && Math.hypot(av.x - dummy.head.x, av.y - dummy.head.y) < 60) {
+      av.hasHit = true; addShockwave(av.x, av.y, 120, '#cfd8dc');
+      hitDummy(av.reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 25, 22, 16, 'explosion');
+    }
+    if (av.y > bounds.bottom - 22) {
+      av.y = bounds.bottom - 22;
+      if (!av.hasHit) { av.hasHit = true; addShockwave(av.x, av.y, 110, '#cfd8dc'); hitDummy(av.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 18, -14, 14, 'explosion'); }
+      av.life--; if (av.life <= 0) anvils.splice(i, 1);
     }
   }
 
-  // Aktualizacja Czarnej Dziury
+  for (let i = rockets.length - 1; i >= 0; i--) {
+    const rk = rockets[i]; rk.x += rk.vx; rk.y += rk.vy;
+    particles.push({ x: rk.x, y: rk.y, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, size: 6, color: '#ff9100', life: 0.5 });
+    const outBounds = rk.x < bounds.left || rk.x > bounds.right || rk.y < bounds.top || rk.y > bounds.bottom;
+    if (Math.hypot(rk.x - dummy.chest.x, rk.y - dummy.chest.y) < 65 || outBounds) {
+      addShockwave(rk.x, rk.y, 160, '#ff6d00'); spawnStuffing(rk.x, rk.y, 24, 13, '#ff9100');
+      hitDummy(rk.reward, dummy.chest.x, dummy.chest.y, (Math.random() - 0.5) * 38, -24, 18, 'explosion');
+      rockets.splice(i, 1);
+    }
+  }
+
   for (let i = blackHoles.length - 1; i >= 0; i--) {
-    const bh = blackHoles[i];
-    bh.timer--;
-    bh.angle += 0.25;
-    bh.tick++;
-
+    const bh = blackHoles[i]; bh.timer--; bh.angle += 0.25; bh.tick++;
     points.forEach(p => {
-      const dx = bh.x - p.x;
-      const dy = bh.y - p.y;
-      const dist = Math.max(15, Math.hypot(dx, dy));
-      // Siła dośrodkowa + wirowanie
-      p.oldx -= (dx / dist) * 3.2 - (dy / dist) * 2.2;
-      p.oldy -= (dy / dist) * 3.2 + (dx / dist) * 2.2;
+      const dx = bh.x - p.x, dy = bh.y - p.y, dist = Math.max(15, Math.hypot(dx, dy));
+      p.oldx -= (dx / dist) * 3.3 - (dy / dist) * 2.2; p.oldy -= (dy / dist) * 3.3 + (dx / dist) * 2.2;
     });
-
-    if (bh.tick % 18 === 0) {
-      hurtTimer = 30;
-      screenShake = 8;
-      addMoney(Math.round(bh.reward / 4), bh.x, bh.y);
-      spawnStuffing(bh.x, bh.y, 6, 9);
-    }
-
-    if (bh.timer <= 0) {
-      // Wielki wybuch na koniec czarnej dziury
-      hitDummy(bh.reward, bh.x, bh.y, (Math.random() - 0.5) * 45, -30, 22);
-      blackHoles.splice(i, 1);
-    }
+    if (bh.tick % 22 === 0) { hurtTimer = 30; screenShake = 8; addMoney(Math.round(bh.reward * 0.25), bh.x, bh.y); spawnStuffing(bh.x, bh.y, 6, 9, '#ea80fc'); }
+    if (bh.timer <= 0) { addShockwave(bh.x, bh.y, 190, '#ea80fc'); hitDummy(bh.reward, bh.x, bh.y, (Math.random() - 0.5) * 45, -30, 22, 'explosion'); blackHoles.splice(i, 1); }
   }
 
-  // Aktualizacja roju szerszeni
-  for (let i = bees.length - 1; i >= 0; i--) {
-    const b = bees[i];
-    b.timer--;
-    const target = i % 2 === 0 ? dummy.head : dummy.chest;
-    const dx = target.x - b.x;
-    const dy = target.y - b.y;
-    b.vx = b.vx * 0.85 + dx * 0.05 + (Math.random() - 0.5) * 5;
-    b.vy = b.vy * 0.85 + dy * 0.05 + (Math.random() - 0.5) * 5;
-    b.x += b.vx;
-    b.y += b.vy;
-
-    if (Math.hypot(dx, dy) < 40 && Math.random() < 0.08) {
-      hitDummy(b.reward, target.x, target.y, (Math.random() - 0.5) * 10, -4, 3);
+  if (bees.length > 0) {
+    beeStingTick++;
+    for (let i = bees.length - 1; i >= 0; i--) {
+      const b = bees[i]; b.timer--;
+      const target = i % 2 === 0 ? dummy.head : dummy.chest, dx = target.x - b.x, dy = target.y - b.y;
+      b.vx = b.vx * 0.85 + dx * 0.05 + (Math.random() - 0.5) * 5; b.vy = b.vy * 0.85 + dy * 0.05 + (Math.random() - 0.5) * 5;
+      b.x += b.vx; b.y += b.vy;
+      if (b.timer <= 0) bees.splice(i, 1);
     }
-    if (b.timer <= 0) bees.splice(i, 1);
+    if (beeStingTick % 12 === 0 && bees.length > 0) hitDummy(bees[0].reward, dummy.head.x, dummy.head.y, (Math.random() - 0.5) * 9, -4, 3, 'hit');
   }
 
-  // Aktualizacja zwierząt (Rekin / Byk)
   for (let i = animals.length - 1; i >= 0; i--) {
-    const a = animals[i];
-    a.x += a.vx;
-    a.y += a.vy;
+    const a = animals[i]; a.x += a.vx; a.y += a.vy; a.tick++;
     if (a.type === 'shark') a.vy += 0.25;
-
-    if (!a.hasHit && Math.hypot(a.x - dummy.chest.x, a.y - dummy.chest.y) < 85) {
-      a.hasHit = true;
-      hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 32, -18, 16);
+    if (a.type === 'dragon') {
+      for (let f = 0; f < 2; f++) particles.push({ x: a.x, y: a.y + 15, vx: a.vx * 0.3 + (Math.random() - 0.5) * 4, vy: 7 + Math.random() * 5, size: 9 + Math.random() * 6, color: Math.random() < 0.5 ? '#ff3d00' : '#ffd600', life: 0.7 });
+      if (!a.hasHit && Math.abs(a.x - dummy.chest.x) < 85) { a.hasHit = true; burnTimer = 180; addShockwave(dummy.chest.x, dummy.chest.y, 150, '#ff3d00'); hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 28, -20, 18, 'explosion'); }
+    } else if (!a.hasHit && Math.hypot(a.x - dummy.chest.x, a.y - dummy.chest.y) < 85) {
+      a.hasHit = true; addShockwave(dummy.chest.x, dummy.chest.y, 130, '#fff'); hitDummy(a.reward, dummy.chest.x, dummy.chest.y, a.dir * 32, -18, 16, 'explosion');
     }
-
-    if (a.x < -150 || a.x > width + 150) {
-      animals.splice(i, 1);
-    }
+    if (a.x < -150 || a.x > width + 150) animals.splice(i, 1);
   }
 
-  // Fizyka punktów Verlet
   points.forEach(p => {
     if (p === pointer.grabbed) {
-      const vx = (pointer.x - p.x) * 0.65;
-      const vy = (pointer.y - p.y) * 0.65;
-      p.x = pointer.x;
-      p.y = pointer.y;
-      p.oldx = p.x - vx;
-      p.oldy = p.y - vy;
-      return;
+      const vx = (pointer.x - p.x) * 0.65, vy = (pointer.y - p.y) * 0.65;
+      p.x = pointer.x; p.y = pointer.y; p.oldx = p.x - vx; p.oldy = p.y - vy; return;
     }
+    const damp = frozenTimer > 0 ? 0.9 : friction;
+    let vx = (p.x - p.oldx) * damp, vy = (p.y - p.oldy) * damp;
+    if (shockTimer > 0) { vx += (Math.random() - 0.5) * 7; vy += (Math.random() - 0.5) * 7; }
+    p.oldx = p.x; p.oldy = p.y; p.x += vx; p.y += vy + gravity;
 
-    let vx = (p.x - p.oldx) * friction;
-    let vy = (p.y - p.oldy) * friction;
-
-    if (shockTimer > 0) {
-      vx += (Math.random() - 0.5) * 7;
-      vy += (Math.random() - 0.5) * 7;
-    }
-
-    p.oldx = p.x;
-    p.oldy = p.y;
-    p.x += vx;
-    p.y += vy + gravity;
-
-    // Detekcja mocnego uderzenia o ściany pudełka
     const speed = Math.hypot(vx, vy);
     let slammed = false;
-
-    if (p.x < bounds.left + p.r) {
-      p.x = bounds.left + p.r;
-      p.oldx = p.x + vx * bounce;
-      if (speed > 11) slammed = true;
-    } else if (p.x > bounds.right - p.r) {
-      p.x = bounds.right - p.r;
-      p.oldx = p.x + vx * bounce;
-      if (speed > 11) slammed = true;
-    }
-
-    if (p.y < bounds.top + p.r) {
-      p.y = bounds.top + p.r;
-      p.oldy = p.y + vy * bounce;
-      if (speed > 11) slammed = true;
-    } else if (p.y > bounds.bottom - p.r) {
-      p.y = bounds.bottom - p.r;
-      p.oldy = p.y + vy * bounce;
-      p.oldx += vx * 0.15;
-      if (speed > 12) slammed = true;
-    }
+    if (p.x < bounds.left + p.r) { p.x = bounds.left + p.r; p.oldx = p.x + vx * bounce; if (speed > 11) slammed = true; }
+    else if (p.x > bounds.right - p.r) { p.x = bounds.right - p.r; p.oldx = p.x + vx * bounce; if (speed > 11) slammed = true; }
+    if (p.y < bounds.top + p.r) { p.y = bounds.top + p.r; p.oldy = p.y + vy * bounce; if (speed > 11) slammed = true; }
+    else if (p.y > bounds.bottom - p.r) { p.y = bounds.bottom - p.r; p.oldy = p.y + vy * bounce; p.oldx += vx * 0.15; if (speed > 12) slammed = true; }
 
     if (slammed && slamCooldown <= 0) {
-      slamCooldown = 10;
-      hurtTimer = 25;
-      screenShake = Math.max(screenShake, 5);
-      addMoney(getWeaponData('hand').reward, p.x, p.y);
-      spawnStuffing(p.x, p.y, 6, 5);
+      slamCooldown = 10; advanceQuest('wall', 1);
+      hitDummy(getWeaponReward(getWeaponData('hand')), p.x, p.y, 0, 0, 5, 'hit');
     }
   });
 
-  // Delikatna siła prostująca kukłę, gdy spoczywa na ziemi
-  if (!pointer.grabbed && blackHoles.length === 0) {
-    dummy.head.y -= 0.7;
-    dummy.pelvis.y += 0.4;
-  }
+  if (!pointer.grabbed && blackHoles.length === 0 && frozenTimer <= 0) { dummy.head.y -= 0.7; dummy.pelvis.y += 0.4; }
 
-  // Rozwiązywanie połączeń (kości)
   for (let iter = 0; iter < 6; iter++) {
     sticks.forEach(s => {
-      const dx = s.p1.x - s.p0.x;
-      const dy = s.p1.y - s.p0.y;
-      const dist = Math.hypot(dx, dy) || 0.001;
-      const diff = (s.len - dist) / dist * 0.5;
-      const ox = dx * diff;
-      const oy = dy * diff;
-
+      const dx = s.p1.x - s.p0.x, dy = s.p1.y - s.p0.y, dist = Math.hypot(dx, dy) || 0.001;
+      const diff = (s.len - dist) / dist * 0.5, ox = dx * diff, oy = dy * diff;
       if (s.p0 !== pointer.grabbed) { s.p0.x -= ox; s.p0.y -= oy; }
       if (s.p1 !== pointer.grabbed) { s.p1.x += ox; s.p1.y += oy; }
     });
   }
 
-  // Cząsteczki
+  for (let i = shockwaves.length - 1; i >= 0; i--) { const sw = shockwaves[i]; sw.r += (sw.maxR - sw.r) * 0.22; sw.life -= 0.06; if (sw.life <= 0) shockwaves.splice(i, 1); }
   for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i];
-    pt.x += pt.vx;
-    pt.y += pt.vy;
-    pt.vy += 0.18;
-    pt.life -= 0.025;
-    if (pt.y > bounds.bottom) {
-      pt.y = bounds.bottom;
-      pt.vy *= -0.3;
-      pt.vx *= 0.7;
-    }
+    const pt = particles[i]; pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.18; pt.life -= 0.026;
+    if (pt.y > bounds.bottom) { pt.y = bounds.bottom; pt.vy *= -0.3; pt.vx *= 0.7; }
     if (pt.life <= 0) particles.splice(i, 1);
   }
-
-  // Latające napisy +$
-  for (let i = floatingTexts.length - 1; i >= 0; i--) {
-    const ft = floatingTexts[i];
-    ft.y += ft.vy;
-    ft.life -= 0.022;
-    if (ft.life <= 0) floatingTexts.splice(i, 1);
-  }
-
-  // Smugi po kulach
-  for (let i = tracers.length - 1; i >= 0; i--) {
-    tracers[i].life -= 0.15;
-    if (tracers[i].life <= 0) tracers.splice(i, 1);
-  }
-
-  // Błyskawice
-  for (let i = lightnings.length - 1; i >= 0; i--) {
-    lightnings[i].life -= 0.08;
-    if (lightnings[i].life <= 0) lightnings.splice(i, 1);
-  }
+  for (let i = floatingTexts.length - 1; i >= 0; i--) { const ft = floatingTexts[i]; ft.y += ft.vy; ft.life -= 0.022; if (ft.life <= 0) floatingTexts.splice(i, 1); }
+  for (let i = tracers.length - 1; i >= 0; i--) { tracers[i].life -= 0.15; if (tracers[i].life <= 0) tracers.splice(i, 1); }
+  for (let i = lightnings.length - 1; i >= 0; i--) { lightnings[i].life -= 0.08; if (lightnings[i].life <= 0) lightnings.splice(i, 1); }
 }
 
-// --- RYSOWANIE (RENDER) ---
-function drawCardboardBox() {
-  const b = getBoxBounds();
-
-  // Wnętrze kartonowego pudełka
+function drawArena() {
+  const b = getBoxBounds(), theme = THEMES.find(t => t.id === currentTheme) || THEMES[0];
   const grad = ctx.createRadialGradient(width * 0.5, height * 0.5, 40, width * 0.5, height * 0.5, Math.max(width, height) * 0.7);
-  grad.addColorStop(0, '#9c7a54');
-  grad.addColorStop(1, '#5d432c');
-  ctx.fillStyle = grad;
-  ctx.fillRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
-
-  // Linie perspektywy narożników pudełka
-  ctx.strokeStyle = 'rgba(40, 26, 14, 0.45)';
-  ctx.lineWidth = 3;
-  const padX = (b.right - b.left) * 0.12;
-  const padY = (b.bottom - b.top) * 0.12;
+  grad.addColorStop(0, theme.c1); grad.addColorStop(1, theme.c2);
+  ctx.fillStyle = grad; ctx.fillRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
+  ctx.strokeStyle = theme.line; ctx.lineWidth = 2.5;
+  const padX = (b.right - b.left) * 0.11, padY = (b.bottom - b.top) * 0.13;
   ctx.strokeRect(b.left + padX, b.top + padY, (b.right - b.left) - padX * 2, (b.bottom - b.top) - padY * 2);
-
   ctx.beginPath();
   ctx.moveTo(b.left, b.top); ctx.lineTo(b.left + padX, b.top + padY);
   ctx.moveTo(b.right, b.top); ctx.lineTo(b.right - padX, b.top + padY);
   ctx.moveTo(b.left, b.bottom); ctx.lineTo(b.left + padX, b.bottom - padY);
   ctx.moveTo(b.right, b.bottom); ctx.lineTo(b.right - padX, b.bottom - padY);
   ctx.stroke();
-
-  // Obramowanie pudełka
-  ctx.strokeStyle = '#3e2b1d';
-  ctx.lineWidth = 6;
+  ctx.strokeStyle = goldRushTimer > 0 ? '#ffd740' : theme.border;
+  ctx.lineWidth = goldRushTimer > 0 ? 7 : 5;
   ctx.strokeRect(b.left, b.top, b.right - b.left, b.bottom - b.top);
 }
 
 function drawDummy() {
-  // Kończyny i tułów
+  const skin = SKINS.find(s => s.id === currentSkin) || SKINS[0];
   sticks.forEach(s => {
     if (!s.visible) return;
-    ctx.strokeStyle = shockTimer > 0 && Math.random() < 0.5 ? '#80d8ff' : s.color;
-    ctx.lineWidth = s.thickness;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(s.p0.x, s.p0.y);
-    ctx.lineTo(s.p1.x, s.p1.y);
-    ctx.stroke();
+    let col = skin.headCol;
+    if (s.role === 'shirt') col = skin.shirtCol;
+    if (s.role === 'pants') col = skin.pantsCol;
+    if (shockTimer > 0 && Math.random() < 0.5) col = '#80d8ff';
+    ctx.strokeStyle = col; ctx.lineWidth = s.thickness; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(s.p0.x, s.p0.y); ctx.lineTo(s.p1.x, s.p1.y); ctx.stroke();
   });
-
-  // Dłonie i stopy
   [dummy.lHand, dummy.rHand, dummy.lFoot, dummy.rFoot].forEach(p => {
-    ctx.fillStyle = '#d7a977';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#8d633a';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.fillStyle = skin.headCol; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 2; ctx.stroke();
   });
-
-  // Głowa Buddy'ego
-  const h = dummy.head;
-  const angle = Math.atan2(h.y - dummy.neck.y, h.x - dummy.neck.x) + Math.PI * 0.5;
-
-  ctx.save();
-  ctx.translate(h.x, h.y);
-  ctx.rotate(angle);
-
-  ctx.fillStyle = shockTimer > 0 && Math.random() < 0.5 ? '#b3e5fc' : '#e0b382';
-  ctx.beginPath();
-  ctx.arc(0, 0, h.r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#8d633a';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  // Szew na czole (styl szmacianej kukły)
-  ctx.strokeStyle = '#6d4c2f';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(-12, -16);
-  ctx.lineTo(6, -12);
-  ctx.stroke();
-
-  // Oczy i mimika
-  ctx.fillStyle = '#1f1916';
-  ctx.strokeStyle = '#1f1916';
-  ctx.lineWidth = 2.5;
-
+  const h = dummy.head, angle = Math.atan2(h.y - dummy.neck.y, h.x - dummy.neck.x) + Math.PI * 0.5;
+  ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(angle);
+  ctx.fillStyle = (hurtTimer > 38) ? '#fff' : (shockTimer > 0 && Math.random() < 0.5 ? '#b3e5fc' : skin.headCol);
+  ctx.beginPath(); ctx.arc(0, 0, h.r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 3; ctx.stroke();
+  if (skin.id === 'gold') { ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -24); }
+  else if (skin.id === 'robot') { ctx.fillStyle = '#00e5ff'; ctx.fillRect(-14, -7, 28, 7); }
+  ctx.fillStyle = '#1f1916'; ctx.strokeStyle = '#1f1916'; ctx.lineWidth = 2.5;
   if (hurtTimer > 0 || shockTimer > 0) {
-    // Oczy X_X podczas otrzymywania obrażeń
-    const drawX = (ox, oy) => {
-      ctx.beginPath();
-      ctx.moveTo(ox - 5, oy - 5); ctx.lineTo(ox + 5, oy + 5);
-      ctx.moveTo(ox + 5, oy - 5); ctx.lineTo(ox - 5, oy + 5);
-      ctx.stroke();
-    };
-    drawX(-9, -3);
-    drawX(9, -3);
-
-    // Otwarte, krzyczące usta
-    ctx.fillStyle = '#4a1212';
-    ctx.beginPath();
-    ctx.arc(0, 11, 7, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
-    // Guzikowe oczy i uśmiech
-    ctx.beginPath();
-    ctx.arc(-9, -3, 4.5, 0, Math.PI * 2);
-    ctx.arc(9, -3, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(0, 6, 10, 0.15 * Math.PI, 0.85 * Math.PI);
-    ctx.stroke();
+    const drawX = (ox, oy) => { ctx.beginPath(); ctx.moveTo(ox - 5, oy - 5); ctx.lineTo(ox + 5, oy + 5); ctx.moveTo(ox + 5, oy - 5); ctx.lineTo(ox - 5, oy + 5); ctx.stroke(); };
+    drawX(-8, -3); drawX(8, -3);
+    ctx.fillStyle = '#4a1212'; ctx.beginPath(); ctx.arc(0, 10, 6.5, 0, Math.PI * 2); ctx.fill();
+  } else if (skin.id !== 'robot') {
+    ctx.beginPath(); ctx.arc(-8, -3, 4, 0, Math.PI * 2); ctx.arc(8, -3, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 5, 9, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
   }
-
   ctx.restore();
+  if (frozenTimer > 0) {
+    ctx.save(); ctx.fillStyle = 'rgba(128, 222, 234, 0.42)'; ctx.strokeStyle = '#e0f7fa'; ctx.lineWidth = 3;
+    ctx.fillRect(dummy.chest.x - 52, dummy.head.y - 35, 104, 155); ctx.strokeRect(dummy.chest.x - 52, dummy.head.y - 35, 104, 155);
+    ctx.restore();
+  }
 }
 
 function drawEffects() {
-  // Czarne dziury
+  if (pinata) {
+    ctx.save(); ctx.translate(pinata.x, pinata.y); ctx.font = '46px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🪅', 0, 0); ctx.font = '800 11px sans-serif'; ctx.fillStyle = '#ffd740'; ctx.fillText(`KLIKNIJ! (${pinata.hp})`, 0, -32); ctx.restore();
+  }
+  shockwaves.forEach(sw => {
+    ctx.save(); ctx.globalAlpha = Math.max(0, sw.life); ctx.strokeStyle = sw.color; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  });
   blackHoles.forEach(bh => {
-    ctx.save();
-    ctx.translate(bh.x, bh.y);
-    ctx.rotate(bh.angle);
+    ctx.save(); ctx.translate(bh.x, bh.y); ctx.rotate(bh.angle);
     const grad = ctx.createRadialGradient(0, 0, 5, 0, 0, 65);
-    grad.addColorStop(0, '#000');
-    grad.addColorStop(0.5, '#4a148c');
-    grad.addColorStop(1, 'rgba(123, 31, 162, 0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 65, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#ea80fc';
-    ctx.lineWidth = 3;
-    for (let arm = 0; arm < 3; arm++) {
-      ctx.rotate((Math.PI * 2) / 3);
-      ctx.beginPath();
-      ctx.arc(15, 0, 24, 0, Math.PI);
-      ctx.stroke();
-    }
+    grad.addColorStop(0, '#000'); grad.addColorStop(0.5, '#4a148c'); grad.addColorStop(1, 'rgba(123, 31, 162, 0)');
+    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0, 0, 65, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ea80fc'; ctx.lineWidth = 3;
+    for (let arm = 0; arm < 3; arm++) { ctx.rotate((Math.PI * 2) / 3); ctx.beginPath(); ctx.arc(15, 0, 24, 0, Math.PI); ctx.stroke(); }
     ctx.restore();
   });
-
-  // Wiązka lasera
+  anvils.forEach(av => {
+    ctx.save(); ctx.translate(av.x, av.y); ctx.fillStyle = '#37474f'; ctx.strokeStyle = '#90a4ae'; ctx.lineWidth = 2;
+    ctx.fillRect(-28, -16, 56, 32); ctx.strokeRect(-28, -16, 56, 32);
+    ctx.fillStyle = '#fff'; ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('100T', 0, 5); ctx.restore();
+  });
+  ctx.font = '30px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  rockets.forEach(rk => { ctx.fillText('🚀', rk.x, rk.y); });
   if (pointer.down && currentWeapon === 'laser') {
-    const sx = width * 0.5;
-    const sy = height - 65;
-    ctx.strokeStyle = 'rgba(255, 23, 68, 0.45)';
-    ctx.lineWidth = 18;
-    ctx.lineCap = 'round';
+    const sx = width * 0.5, sy = height - 60;
+    ctx.strokeStyle = 'rgba(255, 23, 68, 0.45)'; ctx.lineWidth = 18; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
-
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
   }
-
-  // Piła łańcuchowa pod palcem
   if (pointer.down && currentWeapon === 'chainsaw') {
-    ctx.font = '38px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const jx = (Math.random() - 0.5) * 6;
-    const jy = (Math.random() - 0.5) * 6;
-    ctx.fillText('🪚', pointer.x + jx, pointer.y + jy);
+    ctx.font = '38px sans-serif'; ctx.fillText('🪚', pointer.x + (Math.random() - 0.5) * 6, pointer.y + (Math.random() - 0.5) * 6);
   }
-
-  // Animacja uderzenia kijem
-  if (batSwing) {
-    ctx.font = '44px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🏏', batSwing.x, batSwing.y);
-  }
-
-  // Smugi pocisków
+  if (batSwing) { ctx.font = '44px sans-serif'; ctx.fillText('🏏', batSwing.x, batSwing.y); }
   tracers.forEach(t => {
-    ctx.strokeStyle = `rgba(255, 238, 88, ${t.life})`;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(t.x1, t.y1);
-    ctx.lineTo(t.x2, t.y2);
-    ctx.stroke();
+    ctx.strokeStyle = `rgba(255, 238, 88, ${t.life})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(t.x1, t.y1); ctx.lineTo(t.x2, t.y2); ctx.stroke();
   });
-
-  // Pioruny
   lightnings.forEach(l => {
-    ctx.strokeStyle = `rgba(128, 216, 255, ${l.life})`;
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    l.segments.forEach(s => { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); });
-    ctx.stroke();
-
-    ctx.strokeStyle = `rgba(255, 255, 255, ${l.life})`;
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.strokeStyle = `rgba(128, 216, 255, ${l.life})`; ctx.lineWidth = 8;
+    ctx.beginPath(); l.segments.forEach(s => { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); }); ctx.stroke();
+    ctx.strokeStyle = `rgba(255, 255, 255, ${l.life})`; ctx.lineWidth = 3; ctx.stroke();
   });
-
-  // Szerszenie
-  ctx.font = '22px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  bees.forEach(b => {
-    ctx.fillText('🐝', b.x, b.y);
-  });
-
-  // Zwierzęta (Rekin, Byk)
-  ctx.font = '64px sans-serif';
-  animals.forEach(a => {
-    ctx.save();
-    ctx.translate(a.x, a.y);
-    if (a.dir > 0) ctx.scale(-1, 1);
-    ctx.fillText(a.icon, 0, 0);
-    ctx.restore();
-  });
-
-  // Cząsteczki
+  ctx.font = '22px sans-serif'; bees.forEach(b => { ctx.fillText('🐝', b.x, b.y); });
+  ctx.font = '62px sans-serif';
+  animals.forEach(a => { ctx.save(); ctx.translate(a.x, a.y); if (a.dir > 0) ctx.scale(-1, 1); ctx.fillText(a.icon, 0, 0); ctx.restore(); });
   particles.forEach(pt => {
-    ctx.globalAlpha = Math.max(0, pt.life);
-    ctx.fillStyle = pt.color;
-    ctx.beginPath();
-    ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.globalAlpha = Math.max(0, pt.life); ctx.fillStyle = pt.color;
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
   });
   ctx.globalAlpha = 1.0;
-
-  // Latające napisy kasy (+$)
   floatingTexts.forEach(ft => {
     ctx.globalAlpha = Math.max(0, ft.life);
-    ctx.font = `900 ${Math.round(20 * ft.scale)}px 'Segoe UI', sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 4;
-    ctx.strokeText(ft.text, ft.x, ft.y);
-    ctx.fillStyle = '#69f0ae';
-    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.font = `900 ${Math.round(18 * ft.scale)}px 'Segoe UI', sans-serif`; ctx.textAlign = 'center';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.strokeText(ft.text, ft.x, ft.y);
+    ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
   });
   ctx.globalAlpha = 1.0;
-
-  // Błysk ekranu przy piorunie
-  if (flashAlpha > 0) {
-    ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
-    ctx.fillRect(0, 0, width, height);
-  }
+  if (flashAlpha > 0) { ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`; ctx.fillRect(0, 0, width, height); }
 }
 
 function loop() {
   update();
-
   ctx.save();
-  if (screenShake > 0.5) {
-    const sx = (Math.random() - 0.5) * screenShake;
-    const sy = (Math.random() - 0.5) * screenShake;
-    ctx.translate(sx, sy);
-  }
-
+  if (screenShake > 0.5) ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
   ctx.clearRect(-20, -20, width + 40, height + 40);
-  drawCardboardBox();
-  drawDummy();
-  drawEffects();
-
+  drawArena(); drawDummy(); drawEffects();
   ctx.restore();
   requestAnimationFrame(loop);
 }
 
-// Inicjalizacja gry
-initDummy();
-loadSave();
-loop();
+loadSave(); resize(); initDummy(); loop();
 </script>
 </body>
 </html>
